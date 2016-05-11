@@ -13,6 +13,7 @@ public class Agent {
 
    public char get_action( char view[][] ) {
 
+      // hi
       // REPLACE THIS CODE WITH AI TO CHOOSE ACTION
 
       int ch=0;
