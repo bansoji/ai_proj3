@@ -3,7 +3,7 @@
  *  Sample Agent for Text-Based Adventure Game
  *  COMP3411 Artificial Intelligence
  *  UNSW Session 1, 2016
-*/
+ */
 
 import java.util.*;
 import java.io.*;
@@ -13,9 +13,8 @@ public class Agent {
 
    public char get_action( char view[][] ) {
 
-      // BANSON I CAN COMMIT AND PUSH!!!
       // REPLACE THIS CODE WITH AI TO CHOOSE ACTION
-
+      //  HI BANSON
       int ch=0;
 
       System.out.print("Enter Action(s): ");
@@ -26,9 +25,9 @@ public class Agent {
             ch  = System.in.read();
 
             switch( ch ) { // if character is a valid action, return it
-            case 'F': case 'L': case 'R': case 'C': case 'U':
-            case 'f': case 'l': case 'r': case 'c': case 'u':
-               return((char) ch );
+               case 'F': case 'L': case 'R': case 'C': case 'U':
+               case 'f': case 'l': case 'r': case 'c': case 'u':
+                  return((char) ch );
             }
          }
       }
