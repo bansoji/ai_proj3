@@ -13,8 +13,8 @@ public class Agent {
 
    public char get_action( char view[][] ) {
 
-      // REPLACE THIS CODE WITH AI TO CHOOSE ACTION
-      //  HI BANSON
+      // REPLACE THIS CODE WITH AI TO CHOOSE ACTION!!!
+
       int ch=0;
 
       System.out.print("Enter Action(s): ");
