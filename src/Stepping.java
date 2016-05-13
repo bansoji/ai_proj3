@@ -3,7 +3,7 @@
  *  Engine for Text-Based Adventure Game
  *  COMP3411 Artificial Intelligence
  *  UNSW Session 1, 2016
-*/
+ */
 
 import java.util.*;
 import java.io.*;
@@ -22,7 +22,7 @@ public class Stepping {
    private int nrows;     // number of rows in environment
    private int irow,icol; // initial row and column
 
-    // current row, column and direction of agent
+   // current row, column and direction of agent
    private int row,col,dirn;
 
    private boolean have_axe  = false;
@@ -59,11 +59,11 @@ public class Stepping {
                map[r][c] = oneLine.charAt(c);
                agent_here = true;
                switch( map[r][c] ) {
-                case '^': dirn = NORTH; break;
-                case '>': dirn = EAST;  break;
-                case 'v': dirn = SOUTH; break;
-                case '<': dirn = WEST;  break;
-                default:  agent_here = false;
+                  case '^': dirn = NORTH; break;
+                  case '>': dirn = EAST;  break;
+                  case 'v': dirn = SOUTH; break;
+                  case '<': dirn = WEST;  break;
+                  default:  agent_here = false;
                }
                if( agent_here ) {
                   row = r;
@@ -94,14 +94,14 @@ public class Stepping {
          for( c=0; c < map[r].length; c++ ) {
             if(( r == row )&&( c == col )) { // agent is here
                switch( dirn ) {
-                case NORTH: ch = '^'; break;
-                case EAST:  ch = '>'; break;
-                case SOUTH: ch = 'v'; break;
-                case WEST:  ch = '<'; break;
+                  case NORTH: ch = '^'; break;
+                  case EAST:  ch = '>'; break;
+                  case SOUTH: ch = 'v'; break;
+                  case WEST:  ch = '<'; break;
                }
             }
             else {
-              ch = map[r][c];
+               ch = map[r][c];
             }
             System.out.print( ch );
          }
@@ -127,16 +127,16 @@ public class Stepping {
       else {
          d_row = 0; d_col = 0;
          switch( dirn ) {
-          case NORTH: d_row = -1; break;
-          case SOUTH: d_row =  1; break;
-          case EAST:  d_col =  1; break;
-          case WEST:  d_col = -1; break;
+            case NORTH: d_row = -1; break;
+            case SOUTH: d_row =  1; break;
+            case EAST:  d_col =  1; break;
+            case WEST:  d_col = -1; break;
          }
          new_row = row + d_row;
          new_col = col + d_col;
 
          if(  ( new_row < 0 || new_row >= nrows)
-            ||( new_col < 0 || new_col >= map[new_row].length )) {
+                 ||( new_col < 0 || new_col >= map[new_row].length )) {
             if( action == 'F' || action == 'f' ) {
                if( !off_map ) {
                   map[row][col] = '~';
@@ -155,54 +155,54 @@ public class Stepping {
          ch = map[new_row][new_col];
 
          switch( action ) {
-         case 'F': case 'f':
-            switch( ch ) { // can't move into an obstacle
-            case '*': case 'T': case '-':
-               return( false );
-            }
-            if( !off_map && map[row][col] != 'O' ) {
-		map[row][col] = ' ';
-	    }
-	    if( ch == '~' ) {
-		if( num_stones_held > 0 ) {
-		    num_stones_held--;
-                    if( !off_map ) map[new_row][new_col] = 'O';
-		}
-                else {
-                    game_lost = true;
-                }
-            }
-            row = new_row;
-            col = new_col;
+            case 'F': case 'f':
+               switch( ch ) { // can't move into an obstacle
+                  case '*': case 'T': case '-':
+                     return( false );
+               }
+               if( !off_map && map[row][col] != 'O' ) {
+                  map[row][col] = ' ';
+               }
+               if( ch == '~' ) {
+                  if( num_stones_held > 0 ) {
+                     num_stones_held--;
+                     if( !off_map ) map[new_row][new_col] = 'O';
+                  }
+                  else {
+                     game_lost = true;
+                  }
+               }
+               row = new_row;
+               col = new_col;
 
-            switch( ch ) {
-             case 'a': have_axe  = true;     break;
-             case 'k': have_key  = true;     break;
-             case 'g': have_gold = true;     break;
-             case 'o': num_stones_held++;    break;
-            }
-            if( have_gold && row == irow && col == icol ) {
-               game_won = true;
-            }
-            if( !off_map && map[row][col] != 'O' ) {
-		map[row][col] = ' ';
-	    }
-            off_map = false;
-            return( true );
-
-         case 'C': case 'c': // chop
-            if(( ch == 'T' )&& have_axe ) {
-               map[new_row][new_col] = ' ';
+               switch( ch ) {
+                  case 'a': have_axe  = true;     break;
+                  case 'k': have_key  = true;     break;
+                  case 'g': have_gold = true;     break;
+                  case 'o': num_stones_held++;    break;
+               }
+               if( have_gold && row == irow && col == icol ) {
+                  game_won = true;
+               }
+               if( !off_map && map[row][col] != 'O' ) {
+                  map[row][col] = ' ';
+               }
+               off_map = false;
                return( true );
-            }
-            break;
 
-         case 'U': case 'u': // unlock
-            if( ch == '-' && have_key ) {
-               map[new_row][new_col] = ' ';
-               return( true );
-            }
-            break;
+            case 'C': case 'c': // chop
+               if(( ch == 'T' )&& have_axe ) {
+                  map[new_row][new_col] = ' ';
+                  return( true );
+               }
+               break;
+
+            case 'U': case 'u': // unlock
+               if( ch == '-' && have_key ) {
+                  map[new_row][new_col] = ' ';
+                  return( true );
+               }
+               break;
          }
       }
       return( false );
@@ -215,17 +215,17 @@ public class Stepping {
       for( i = -2; i <= 2; i++ ) {
          for( j = -2; j <= 2; j++ ) {
             switch( dirn ) {
-             case NORTH: r = row+i; c = col+j; break;
-             case SOUTH: r = row-i; c = col-j; break;
-             case EAST:  r = row+j; c = col-i; break;
-             case WEST:  r = row-j; c = col+i; break;
+               case NORTH: r = row+i; c = col+j; break;
+               case SOUTH: r = row-i; c = col-j; break;
+               case EAST:  r = row+j; c = col-i; break;
+               case WEST:  r = row-j; c = col+i; break;
             }
             if(  ( r >= 0 )&&( r < nrows )
-               &&( c >= 0 )&&( c < map[r].length )) {
-                view[2+i][2+j] = map[r][c];
+                    &&( c >= 0 )&&( c < map[r].length )) {
+               view[2+i][2+j] = map[r][c];
             }
             else {
-                view[2+i][2+j] = '.';
+               view[2+i][2+j] = '.';
             }
          }
       }
@@ -234,7 +234,7 @@ public class Stepping {
    private static void printUsage()
    {
       swanSong(
-        "Usage: java Stepping [-p <port>] -i map [-m <maxmoves>] [-s]\n");
+              "Usage: java Stepping [-p <port>] -i map [-m <maxmoves>] [-s]\n");
    }
 
    public static void main( String[] args )
@@ -316,23 +316,23 @@ public class Stepping {
             for( m=1; m <= maxmoves; m++ ) {
                stepping.get_view();
                for( i=0; i < 5; i++ ) {
-                   for( j=0; j < 5; j++ ) {
-                       if( !(( i == 2 )&&( j == 2 ))) {
-                          out.write( stepping.view[i][j] );
-                       }
-                   }
+                  for( j=0; j < 5; j++ ) {
+                     if( !(( i == 2 )&&( j == 2 ))) {
+                        out.write( stepping.view[i][j] );
+                     }
+                  }
                }
                out.flush();
                action = (char) in.read();
                if( !silent ) {
-                 System.out.println("action = "+ action );
+                  System.out.println("action = "+ action );
                }
                stepping.apply( action );
                if( !silent ) {
                   stepping.print_map();
                }
                if( stepping.game_won ) {
-                   swanSong( "Game Won in "+ m +" moves." );
+                  swanSong( "Game Won in "+ m +" moves." );
                }
                else if( stepping.game_lost ) {
                   swanSong( "Game Lost." );
@@ -345,7 +345,7 @@ public class Stepping {
          }
          finally {
             try {
-                clientSocket.close();
+               clientSocket.close();
             }
             catch( IOException e ) {}
          }
