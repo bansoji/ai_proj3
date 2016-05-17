@@ -13,7 +13,18 @@ public class Agent {
 
    public char get_action( char view[][] ) {
 
-      // REPLACE THIS CODE WITH AI TO CHOOSE ACTION!!!
+      char ch;
+      Random ran = new Random();
+      int n = rand.nextInt(3);
+      if (n == 0) {
+         ch = 'F';
+      } else if (n == 1) {
+         ch = 'L';
+      } else {
+         ch = 'R';
+      }
+      return ch;
+ /*     // REPLACE THIS CODE WITH AI TO CHOOSE ACTION!
 
       int ch=0;
 
@@ -35,7 +46,7 @@ public class Agent {
          System.out.println ("IO error:" + e );
       }
 
-      return 0;
+      return 0;*/
    }
 
    void print_view( char view[][] )
