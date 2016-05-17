@@ -14,19 +14,32 @@ public class Agent {
    public char get_action( char view[][] ) {
 
       char ch;
+      int n = 0;
       Random ran = new Random();
-      int n = rand.nextInt(3);
-      if (n == 0) {
-         ch = 'F';
-      } else if (n == 1) {
-         ch = 'L';
+      if (view[1][2] == '~' || view[1][2] == '*') {
+         n = ran.nextInt(2);
+         if (n == 0) {
+            ch = 'L';
+         } else {
+            ch = 'R';
+         }
       } else {
-         ch = 'R';
+         n = ran.nextInt(3);
+         if (n == 0) {
+            ch = 'F';
+         } else if (n == 1) {
+            ch = 'L';
+         } else {
+            ch = 'R';
+         }
       }
       return ch;
- /*     // REPLACE THIS CODE WITH AI TO CHOOSE ACTION!
 
-      int ch=0;
+      // REPLACE THIS CODE WITH AI TO CHOOSE ACTION!
+
+     /* int ch=0;
+
+      print_view(view);
 
       System.out.print("Enter Action(s): ");
 
