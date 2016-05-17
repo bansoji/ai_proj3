@@ -11,17 +11,56 @@ import java.net.*;
 
 public class Agent {
 
-   public char get_action( char view[][] ) {
+   final static int EAST   = 0;
+   final static int NORTH  = 1;
+   final static int WEST   = 2;
+   final static int SOUTH  = 3;
 
+   public int dirn;                          // direction of agent
+   public int moves = 0;                     // number of moves
+   public char prev;                         // previous move
+   public char[][] map = new char[100][100]; // constructed map of views from path travelled
+   public boolean[][] visited = new boolean[100][100]; // boolean value whether space has been visited
+   public int row = 5;                       // number of rows in the map
+   public int col = 5;                       // number of columns in the map
+   public int r = 2;                         // current row of agent
+   public int c = 2;                         // current column of agent
+   public int x = 2;                         // start x coordinate of agent
+   public int y = 2;                         // start y coordinate of agent
+
+
+   public char get_action( char view[][] ) {
+      if (moves == 0) {
+         switch (view[2][2]) {
+            case '^':
+               dirn = NORTH;
+               break;
+            case '>':
+               dirn = EAST;
+               break;
+            case 'v':
+               dirn = SOUTH;
+               break;
+            case '<':
+               dirn = WEST;
+               break;
+         }
+         create_map(view);
+      }
+      if (prev == 'F' || prev == 'C' || prev == 'U') {
+            update_map(view);
+      }
       char ch;
-      int n = 0;
+      int n;
       Random ran = new Random();
       if (view[1][2] == '~' || view[1][2] == '*') {
          n = ran.nextInt(2);
          if (n == 0) {
             ch = 'L';
+            dirn = (dirn+1) % 4;
          } else {
             ch = 'R';
+            dirn = (dirn+3) % 4;
          }
       } else {
          n = ran.nextInt(3);
@@ -29,15 +68,20 @@ public class Agent {
             ch = 'F';
          } else if (n == 1) {
             ch = 'L';
+            dirn = (dirn+1) % 4;
          } else {
             ch = 'R';
+            dirn = (dirn+3) % 4;
          }
       }
+      moves++;
+      print_map();
+      prev = ch;
       return ch;
 
       // REPLACE THIS CODE WITH AI TO CHOOSE ACTION!
 
-     /* int ch=0;
+      /*int ch=0;
 
       print_view(view);
 
@@ -60,6 +104,152 @@ public class Agent {
       }
 
       return 0;*/
+   }
+
+   void create_map(char view[][]) {
+      if (dirn == EAST) {
+         for (int i = 0; i < 5; i++) {
+            for (int j = 0; j < 5; j++) {
+               map[i][j] = view[4-j][i];
+               visited[i][j] = false;
+            }
+         }
+      } else if (dirn == NORTH) {
+         for (int i = 0; i < 5; i++) {
+            for (int j = 0; j < 5; j++) {
+               map[i][j] = view[i][j];
+               visited[i][j] = false;
+            }
+         }
+      } else if (dirn == WEST) {
+         for (int i = 0; i < 5; i++) {
+            for (int j = 0; j < 5; j++) {
+               map[i][j] = view[j][4-i];
+               visited[i][j] = false;
+            }
+         }
+      } else if (dirn == SOUTH) {
+         for (int i = 0; i < 5; i++) {
+            for (int j = 0; j < 5; j++) {
+               map[i][j] = view[4-i][4-j];
+               visited[i][j] = false;
+            }
+         }
+      }
+      visited[2][2] = true;
+   }
+
+   void update_map(char view[][]) {
+      if (dirn == EAST) {           // moved 1 to the right
+         c++;
+         if (!visited[r][c]) {
+            if (c+2 == col) {
+               for (int i = 0; i < row; i++) {
+                  map[i][col] = '?';
+                  visited[i][col]= false;
+               }
+               col++;
+            }
+            for (int i = -2; i <= 2; i++) {
+               map[r+i][c+2] = view[0][i+2];
+            }
+            visited[r][c] = true;
+
+         }
+      } else if (dirn == NORTH) {
+         r--;
+         if (!visited[r][c]) {
+            if (r-2 < 0) {
+               for (int i = row; i > 0; i--) {
+                  for (int j = 0; j < col; j++) {
+                     map[i][j] = map[i-1][j];
+                     visited[i][j] = visited[i-1][j];
+                  }
+               }
+               for (int j = 0; j < col; j++) {
+                  map[0][j] = '?';
+                  visited[0][j] = false;
+               }
+               row++;
+               r++;
+               x++;
+            }
+            for (int i = -2; i <= 2; i++) {
+               map[0][c+i] = view[0][i+2];
+            }
+            visited[r][c] = true;
+         }
+      } else if (dirn == WEST) {
+         c--;
+         if (!visited[r][c]) {
+            if (c-2 < 0) {
+               for (int i = 0; i < row; i++) {
+                  for (int j = col; j > 0; j--) {
+                     map[i][j] = map[i][j-1];
+                     visited[i][j] = visited[i][j-1];
+                  }
+               }
+               for (int i = 0; i < row; i++) {
+                  map[i][0] = '?';
+                  visited[i][0] = false;
+               }
+               col++;
+               c++;
+               y++;
+            }
+            for (int i = -2; i <= 2; i++) {
+               map[r+i][0] = view[0][i+2];
+            }
+            visited[r][c] = true;
+         }
+      } else if (dirn == SOUTH) {
+         r++;
+         if (!visited[r][c]) {
+            if (r+2 == row) {
+               for (int j = 0; j < col; j++) {
+                  map[row][j] = '?';
+                  visited[row][j] = false;
+               }
+               row++;
+            }
+            for (int i = -2; i <= 2; i++) {
+               map[r+2][c+i] = view[0][2-i];
+            }
+            visited[r][c] = true;
+         }
+      }
+   }
+
+   void print_map() {
+      int i,j;
+      System.out.println();
+      System.out.println("MAP");
+      for( i=0; i < row; i++ ) {
+         for( j=0; j < col; j++ ) {
+               if (i == r && j == c) {
+                  switch( dirn ) {
+                     case NORTH:
+                        System.out.print('^');
+                        break;
+                     case SOUTH:
+                        System.out.print('v');
+                        break;
+                     case EAST:
+                        System.out.print('>');
+                        break;
+                     case WEST:
+                        System.out.print('<');
+                        break;
+                  }
+               } else if (i == x && j == y) {
+                     System.out.print('X');
+               } else {
+                  System.out.print(map[i][j]);
+               }
+         }
+         System.out.println();
+      }
+      System.out.println();
    }
 
    void print_view( char view[][] )
@@ -111,7 +301,7 @@ public class Agent {
          System.exit(-1);
       }
 
-      try { // scan 5-by-5 wintow around current location
+      try { // scan 5-by-5 window around current location
          while( true ) {
             for( i=0; i < 5; i++ ) {
                for( j=0; j < 5; j++ ) {
