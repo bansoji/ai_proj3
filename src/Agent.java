@@ -105,15 +105,33 @@ public class Agent {
             }
          }
       } else {
-         n = ran.nextInt(4);
-         if (n == 0) {
-            ch = 'L';
-            dirn = (dirn+1) % 4;
-         } else if (n == 1) {
-            ch = 'R';
-            dirn = (dirn+3) % 4;
+         if (view[2][1] == '~' || view[2][1] == '*' || view[2][1] == 'T' || view[2][1]== '-') {
+            n = ran.nextInt(2);
+            if (n == 0) {
+               ch = 'F';
+            } else {
+               ch = 'R';
+               dirn = (dirn + 3) % 4;
+            }
+         } else if (view[2][3] == '~' || view[2][3] == '*' || view[2][3] == 'T' || view[2][3]== '-') {
+            n = ran.nextInt(2);
+            if (n == 0) {
+               ch = 'F';
+            } else {
+               ch = 'L';
+               dirn = (dirn + 1) % 4;
+            }
          } else {
-            ch = 'F';
+            n = ran.nextInt(4);
+            if (n == 0) {
+               ch = 'L';
+               dirn = (dirn + 1) % 4;
+            } else if (n == 1) {
+               ch = 'R';
+               dirn = (dirn + 3) % 4;
+            } else {
+               ch = 'F';
+            }
          }
       }
       moves++;
