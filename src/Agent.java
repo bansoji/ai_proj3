@@ -27,6 +27,13 @@ public class Agent {
    public int c = 2;                         // current column of agent
    public int x = 2;                         // start x coordinate of agent
    public int y = 2;                         // start y coordinate of agent
+   public boolean found_gold = false;
+   public int gx;
+   public int gy;
+   public boolean has_axe = false;
+   public boolean has_key = false;
+   public boolean has_gold = false;
+
 
 
    public char get_action( char view[][] ) {
@@ -112,6 +119,11 @@ public class Agent {
             for (int j = 0; j < 5; j++) {
                map[i][j] = view[4-j][i];
                visited[i][j] = false;
+               if (map[i][j] == 'g') {
+                  found_gold = true;
+                  gx = i;
+                  gy = j;
+               }
             }
          }
       } else if (dirn == NORTH) {
@@ -119,6 +131,11 @@ public class Agent {
             for (int j = 0; j < 5; j++) {
                map[i][j] = view[i][j];
                visited[i][j] = false;
+               if (map[i][j] == 'g') {
+                  found_gold = true;
+                  gx = i;
+                  gy = j;
+               }
             }
          }
       } else if (dirn == WEST) {
@@ -126,6 +143,11 @@ public class Agent {
             for (int j = 0; j < 5; j++) {
                map[i][j] = view[j][4-i];
                visited[i][j] = false;
+               if (map[i][j] == 'g') {
+                  found_gold = true;
+                  gx = i;
+                  gy = j;
+               }
             }
          }
       } else if (dirn == SOUTH) {
@@ -133,6 +155,11 @@ public class Agent {
             for (int j = 0; j < 5; j++) {
                map[i][j] = view[4-i][4-j];
                visited[i][j] = false;
+               if (map[i][j] == 'g') {
+                  found_gold = true;
+                  gx = i;
+                  gy = j;
+               }
             }
          }
       }
@@ -153,6 +180,11 @@ public class Agent {
             }
             for (int i = -2; i <= 2; i++) {        // update map with current view
                map[r+i][c+2] = view[0][i+2];
+               if (map[r+i][c+2] == 'g' && !found_gold) {
+                  found_gold = true;
+                  gx = r+i;
+                  gy = c+2;
+               }
             }
             visited[r][c] = true;
          }
@@ -173,9 +205,17 @@ public class Agent {
                row++;
                r++;
                x++;
+               if (found_gold) {
+                  gx++;
+               }
             }
             for (int i = -2; i <= 2; i++) {        // update map with current view
                map[r-2][c+i] = view[0][i+2];
+               if (map[r-2][c+i] == 'g' && !found_gold) {
+                  found_gold = true;
+                  gx = r-2;
+                  gy = c+i;
+               }
             }
             visited[r][c] = true;
          }
@@ -196,9 +236,17 @@ public class Agent {
                col++;
                c++;
                y++;
+               if (found_gold) {
+                  gy++;
+               }
             }
             for (int i = -2; i <= 2; i++) {        // update map with current view
                map[r+i][c-2] = view[0][2-i];
+               if (map[r+i][c-2] == 'g' && !found_gold) {
+                  found_gold = true;
+                  gx = r+i;
+                  gy = c-2;
+               }
             }
             visited[r][c] = true;
          }
@@ -214,6 +262,11 @@ public class Agent {
             }
             for (int i = -2; i <= 2; i++) {        // update map with current view
                map[r+2][c+i] = view[0][2-i];
+               if (map[r+2][c+i] == 'g' && !found_gold) {
+                  found_gold = true;
+                  gx = r+2;
+                  gy = c+i;
+               }
             }
             visited[r][c] = true;
          }
