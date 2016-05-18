@@ -27,14 +27,41 @@ public class Agent {
    public int c = 2;                         // current column of agent
    public int x = 2;                         // start x coordinate of agent
    public int y = 2;                         // start y coordinate of agent
-   public boolean found_gold = false;
-   public int gx;
-   public int gy;
+   public boolean found_gold = false;        // true if location of gold has been discovered
+   public boolean path_to_gold = false;      // true if path to gold has been found
+   public int gx;                            // x coordinate of gold
+   public int gy;                            // y coordinate of gold
+   public List<Node> path = new ArrayList<Node>();
    public boolean has_axe = false;
    public boolean has_key = false;
    public boolean has_gold = false;
+   public Node currentNode;
+   private final int COST = 1;
 
+   class Node {
+      List<Node> neighbours = new ArrayList<Node>();
+      public Node parent;
+      public int nx;
+      public int ny;
+      public char nch;
+      public double f;
+      public double g;
+      public double h;
 
+      public Node(int x, int y, char ch) {
+         nx = x;
+         ny = y;
+         nch = ch;
+      }
+
+      public void getEstimate() {
+         this.h = Math.abs(this.nx-gx)+Math.abs(this.ny-gy);
+      }
+
+      public double getF() {
+         return this.g + this.h;
+      }
+   }
 
    public char get_action( char view[][] ) {
       if (moves == 0) {
@@ -165,6 +192,7 @@ public class Agent {
       }
       map[2][2] = 'x';
       visited[2][2] = true;
+
    }
 
    void update_map(char view[][]) {
