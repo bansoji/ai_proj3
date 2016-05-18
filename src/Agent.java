@@ -53,7 +53,7 @@ public class Agent {
       char ch;
       int n;
       Random ran = new Random();
-      if (view[1][2] == '~' || view[1][2] == '*') {
+      if (view[1][2] == '~' || view[1][2] == '*' || view[1][2] == 'T' || view[1][2]== '-') {
          n = ran.nextInt(2);
          if (n == 0) {
             ch = 'L';
@@ -155,7 +155,6 @@ public class Agent {
                map[r+i][c+2] = view[0][i+2];
             }
             visited[r][c] = true;
-
          }
       } else if (dirn == NORTH) {
          r--;
