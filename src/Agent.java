@@ -88,13 +88,21 @@ public class Agent {
       int n;
       Random ran = new Random();
       if (view[1][2] == '~' || view[1][2] == '*' || view[1][2] == 'T' || view[1][2]== '-') {
-         n = ran.nextInt(2);
-         if (n == 0) {
-            ch = 'L';
-            dirn = (dirn+1) % 4;
-         } else {
+         if (view[2][1] == '~' || view[2][1] == '*' || view[2][1] == 'T' || view[2][1]== '-') {
             ch = 'R';
-            dirn = (dirn+3) % 4;
+            dirn = (dirn + 3) % 4;
+         } else if (view[2][3] == '~' || view[2][3] == '*' || view[2][3] == 'T' || view[2][3]== '-') {
+            ch= 'L';
+            dirn = (dirn + 1) % 4;
+         } else {
+            n = ran.nextInt(2);
+            if (n == 0) {
+               ch = 'L';
+               dirn = (dirn + 1) % 4;
+            } else {
+               ch = 'R';
+               dirn = (dirn + 3) % 4;
+            }
          }
       } else {
          n = ran.nextInt(4);
