@@ -63,15 +63,15 @@ public class Agent {
             dirn = (dirn+3) % 4;
          }
       } else {
-         n = ran.nextInt(3);
+         n = ran.nextInt(4);
          if (n == 0) {
-            ch = 'F';
-         } else if (n == 1) {
             ch = 'L';
             dirn = (dirn+1) % 4;
-         } else {
+         } else if (n == 1) {
             ch = 'R';
             dirn = (dirn+3) % 4;
+         } else {
+            ch = 'F';
          }
       }
       moves++;
@@ -81,7 +81,7 @@ public class Agent {
 
       // REPLACE THIS CODE WITH AI TO CHOOSE ACTION!
 
-      /*int ch=0;
+/*      int ch=0;
 
       print_view(view);
 
@@ -136,21 +136,22 @@ public class Agent {
             }
          }
       }
+      map[2][2] = 'x';
       visited[2][2] = true;
    }
 
    void update_map(char view[][]) {
-      if (dirn == EAST) {           // moved 1 to the right
+      if (dirn == EAST) {
          c++;
          if (!visited[r][c]) {
-            if (c+2 == col) {
-               for (int i = 0; i < row; i++) {
+            if (c+2 == col) {                      // if we need to expand map to the right
+               for (int i = 0; i < row; i++) {     // add another column
                   map[i][col] = '?';
                   visited[i][col]= false;
                }
                col++;
             }
-            for (int i = -2; i <= 2; i++) {
+            for (int i = -2; i <= 2; i++) {        // update map with current view
                map[r+i][c+2] = view[0][i+2];
             }
             visited[r][c] = true;
@@ -159,14 +160,14 @@ public class Agent {
       } else if (dirn == NORTH) {
          r--;
          if (!visited[r][c]) {
-            if (r-2 < 0) {
-               for (int i = row; i > 0; i--) {
+            if (r-2 < 0) {                         // if we need to expand map up
+               for (int i = row; i > 0; i--) {     // add a row by shifting array down a row
                   for (int j = 0; j < col; j++) {
                      map[i][j] = map[i-1][j];
                      visited[i][j] = visited[i-1][j];
                   }
                }
-               for (int j = 0; j < col; j++) {
+               for (int j = 0; j < col; j++) {     // initialise first row
                   map[0][j] = '?';
                   visited[0][j] = false;
                }
@@ -174,22 +175,22 @@ public class Agent {
                r++;
                x++;
             }
-            for (int i = -2; i <= 2; i++) {
-               map[0][c+i] = view[0][i+2];
+            for (int i = -2; i <= 2; i++) {        // update map with current view
+               map[r-2][c+i] = view[0][i+2];
             }
             visited[r][c] = true;
          }
       } else if (dirn == WEST) {
          c--;
          if (!visited[r][c]) {
-            if (c-2 < 0) {
-               for (int i = 0; i < row; i++) {
+            if (c-2 < 0) {                         // if we need to expand map to the left
+               for (int i = 0; i < row; i++) {     // add a column by shifting array to the right
                   for (int j = col; j > 0; j--) {
                      map[i][j] = map[i][j-1];
                      visited[i][j] = visited[i][j-1];
                   }
                }
-               for (int i = 0; i < row; i++) {
+               for (int i = 0; i < row; i++) {     // initialise first column
                   map[i][0] = '?';
                   visited[i][0] = false;
                }
@@ -197,22 +198,22 @@ public class Agent {
                c++;
                y++;
             }
-            for (int i = -2; i <= 2; i++) {
-               map[r+i][0] = view[0][i+2];
+            for (int i = -2; i <= 2; i++) {        // update map with current view
+               map[r+i][c-2] = view[0][2-i];
             }
             visited[r][c] = true;
          }
       } else if (dirn == SOUTH) {
          r++;
          if (!visited[r][c]) {
-            if (r+2 == row) {
-               for (int j = 0; j < col; j++) {
+            if (r+2 == row) {                      // if we need to expand map down
+               for (int j = 0; j < col; j++) {     // add another row
                   map[row][j] = '?';
                   visited[row][j] = false;
                }
                row++;
             }
-            for (int i = -2; i <= 2; i++) {
+            for (int i = -2; i <= 2; i++) {        // update map with current view
                map[r+2][c+i] = view[0][2-i];
             }
             visited[r][c] = true;
@@ -241,8 +242,6 @@ public class Agent {
                         System.out.print('<');
                         break;
                   }
-               } else if (i == x && j == y) {
-                     System.out.print('X');
                } else {
                   System.out.print(map[i][j]);
                }
