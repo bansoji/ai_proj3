@@ -77,7 +77,7 @@ public class Agent {
       Node start = new Node(r, c, map[r][c]);
       start.parent = null;
       start.g = 0;
-      start.getEstimate(x,y);
+      start.getEstimate(to.nx,to.ny);
       start.f = start.g + start.h;
       queue.add(start);
       boolean found_goal = false;
@@ -95,7 +95,7 @@ public class Agent {
             Node n = new Node(current.nx, current.ny + 1, map[current.nx][current.ny + 1]);
             n.parent = current;
             n.g = current.g + COST;
-            n.getEstimate(x,y);
+            n.getEstimate(to.nx,to.ny);
             n.f = n.g + n.h;
             queue.add(n);
          }
@@ -103,7 +103,7 @@ public class Agent {
             Node n = new Node(current.nx - 1, current.ny, map[current.nx - 1][current.ny]);
             n.parent = current;
             n.g = current.g + COST;
-            n.getEstimate(x,y);
+            n.getEstimate(to.nx,to.ny);
             n.f = n.g + n.h;
             queue.add(n);
          }
@@ -111,7 +111,7 @@ public class Agent {
             Node n = new Node(current.nx, current.ny - 1, map[current.nx][current.ny - 1]);
             n.parent = current;
             n.g = current.g + COST;
-            n.getEstimate(x,y);
+            n.getEstimate(to.nx,to.ny);
             n.f = n.g + n.h;
             queue.add(n);
          }
@@ -119,7 +119,7 @@ public class Agent {
             Node n = new Node(current.nx + 1, current.ny, map[current.nx + 1][current.ny]);
             n.parent = current;
             n.g = current.g + COST;
-            n.getEstimate(x,y);
+            n.getEstimate(to.nx,to.ny);
             n.f = n.g + n.h;
             queue.add(n);
          }
