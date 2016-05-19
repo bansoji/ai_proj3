@@ -294,6 +294,7 @@ public class Agent {
                queue.add(n);
             }
          }
+         queue.clear();
          if (found_goal) { // if we have found a path store it
             List<Node> reverse = new ArrayList<Node>();
             for (Node node = goal; node != start; node = node.parent) {
@@ -328,6 +329,8 @@ public class Agent {
                ch = 'R';
                dirn = (dirn + 3) % 4;
             }
+         } else {
+            // agent needs to move randomly if path can't be established
          }
          // agent is trying to find location of the gold
       } else {
