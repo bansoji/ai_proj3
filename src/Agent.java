@@ -60,6 +60,105 @@ public class Agent {
 
    }
 
+   private void createPathTo(Node to){
+      PriorityQueue<Node> queue = new PriorityQueue<Node>(new Comparator<Node>() {
+         @Override
+         public int compare(Node o1, Node o2) {
+            if (o1.f > o2.f) {
+               return 1;
+            } else if (o1.f < o2.f) {
+               return -1;
+            } else {
+               return 0;
+            }
+         }
+      });
+
+      Node start = new Node(r, c, map[r][c]);
+      start.parent = null;
+      start.g = 0;
+      start.getEstimate(x,y);
+      start.f = start.g + start.h;
+      queue.add(start);
+      boolean found_goal = false;
+      Node goal = null;
+      while (!queue.isEmpty() && !found_goal) {
+         Node current = queue.poll();
+         // goal reached and goal obtained
+         if (current.nx == to.nx && current.ny == to.ny) {
+            found_path = true;
+            found_goal = true;
+            goal = current;
+         }
+         // add neighbouring tiles that can be legally moved to
+         if (current.ny < col-1 && (map[current.nx][current.ny + 1] == ' ' || map[current.nx][current.ny + 1] == 'g')) {
+            Node n = new Node(current.nx, current.ny + 1, map[current.nx][current.ny + 1]);
+            n.parent = current;
+            n.g = current.g + COST;
+            n.getEstimate(x,y);
+            n.f = n.g + n.h;
+            queue.add(n);
+         }
+         if (current.nx > 0 && (map[current.nx - 1][current.ny] == ' ' || map[current.nx - 1][current.ny] == 'g')) {
+            Node n = new Node(current.nx - 1, current.ny, map[current.nx - 1][current.ny]);
+            n.parent = current;
+            n.g = current.g + COST;
+            n.getEstimate(x,y);
+            n.f = n.g + n.h;
+            queue.add(n);
+         }
+         if (current.ny > 0 && (map[current.nx][current.ny - 1] == ' ' || map[current.nx][current.ny - 1] == 'g')) {
+            Node n = new Node(current.nx, current.ny - 1, map[current.nx][current.ny - 1]);
+            n.parent = current;
+            n.g = current.g + COST;
+            n.getEstimate(x,y);
+            n.f = n.g + n.h;
+            queue.add(n);
+         }
+         if (current.nx < row-1 && (map[current.nx + 1][current.ny] == ' ' || map[current.nx + 1][current.ny] == 'g')) {
+            Node n = new Node(current.nx + 1, current.ny, map[current.nx + 1][current.ny]);
+            n.parent = current;
+            n.g = current.g + COST;
+            n.getEstimate(x,y);
+            n.f = n.g + n.h;
+            queue.add(n);
+         }
+      }
+      if (found_goal) { // if we have found a path store it
+         List<Node> reverse = new ArrayList<Node>();
+         for (Node node = goal; node != start; node = node.parent) {
+            reverse.add(node);
+         }
+         for (int i = 0; i < reverse.size(); i++) {
+            path.add(i, reverse.get(reverse.size() - i - 1));
+         }
+
+      }
+   }
+
+   private char nextMove(Node next){
+      int nextdirn = 0;
+      if (next.nx == r && next.ny == c + 1) {
+         nextdirn = EAST;
+      } else if (next.nx == r - 1 && next.ny == c) {
+         nextdirn = NORTH;
+      } else if (next.nx == r && next.ny == c - 1) {
+         nextdirn = WEST;
+      } else if (next.nx == r + 1 && next.ny == c) {
+         nextdirn = SOUTH;
+      }
+      if (dirn == nextdirn) {
+         path.remove(next);
+         return 'F';
+      } else if ((dirn + 1) % 4 == nextdirn) {
+         dirn = (dirn + 1) % 4;
+         return 'L';
+      } else {
+         dirn = (dirn + 3) % 4;
+         return 'R';
+      }
+   }
+
    public char get_action( char view[][] ) {
       if (moves == 0) {
          switch (view[2][2]) {
@@ -81,256 +180,43 @@ public class Agent {
       if (prev == 'F' || prev == 'C' || prev == 'U') {
             update_map(view);
       }
+
+      // if agent is now on gold, update data
+      if (r == gx && c == gy) {
+         has_gold = true;
+         found_path = false;
+      }
+
+      // if agent has gold and is on start position
+      if(has_gold && (r == gx && c == gy)){
+         //TODO: we're done
+      }
+
       char ch = 'L';
       int rn;
       Random ran = new Random();
-      // agent has the gold and is returning to start position
-      if (has_gold && found_path) {
+      // agent has the gold
+      if (has_gold) {
+         if(!found_path){ // if there isn't a path, generate one
+            path.clear();
+            Node start = new Node(x,y,map[x][y]);
+            createPathTo(start);
+
+         }
          Node next = path.get(0);
-         int nextdirn = 0;
-         if (next.nx == r && next.ny == c + 1) {
-            nextdirn = EAST;
-         } else if (next.nx == r - 1 && next.ny == c) {
-            nextdirn = NORTH;
-         } else if (next.nx == r && next.ny == c - 1) {
-            nextdirn = WEST;
-         } else if (next.nx == r + 1 && next.ny == c) {
-            nextdirn = SOUTH;
-         }
-         if (dirn == nextdirn) {
-            ch = 'F';
-            path.remove(next);
-         } else if ((dirn + 1) % 4 == nextdirn) {
-            ch = 'L';
-            dirn = (dirn + 1) % 4;
-         } else {
-            ch = 'R';
-            dirn = (dirn + 3) % 4;
-         }
-      // agent has the gold but needs to establish path to start position
-      } else if (has_gold && !found_path) {
-         path.clear();
-         PriorityQueue<Node> queue = new PriorityQueue<Node>(new Comparator<Node>() {
-            @Override
-            public int compare(Node o1, Node o2) {
-               if (o1.f > o2.f) {
-                  return 1;
-               } else if (o1.f < o2.f) {
-                  return -1;
-               } else {
-                  return 0;
-               }
-            }
-         });
-         Node start = new Node(r, c, map[r][c]);
-         start.parent = null;
-         start.g = 0;
-         start.getEstimate(x,y);
-         start.f = start.g + start.h;
-         queue.add(start);
-         boolean found_goal = false;
-         Node goal = null;
-         while (!queue.isEmpty() && !found_goal) {
-            Node current = queue.poll();
-            // goal reached and goal obtained
-            if (current.nx == x && current.ny == y) {
-               found_goal = true;
-               found_path = true;
-               goal = current;
-            }
-            // add neighbouring tiles that can be legally moved to
-            if (current.ny < col-1 && map[current.nx][current.ny + 1] == ' ') {
-               Node n = new Node(current.nx, current.ny + 1, map[current.nx][current.ny + 1]);
-               n.parent = current;
-               n.g = current.g + COST;
-               n.getEstimate(x,y);
-               n.f = n.g + n.h;
-               queue.add(n);
-            }
-            if (current.nx > 0 && map[current.nx - 1][current.ny] == ' ') {
-               Node n = new Node(current.nx - 1, current.ny, map[current.nx - 1][current.ny]);
-               n.parent = current;
-               n.g = current.g + COST;
-               n.getEstimate(x,y);
-               n.f = n.g + n.h;
-               queue.add(n);
-            }
-            if (current.ny > 0 && map[current.nx][current.ny - 1] == ' ') {
-               Node n = new Node(current.nx, current.ny - 1, map[current.nx][current.ny - 1]);
-               n.parent = current;
-               n.g = current.g + COST;
-               n.getEstimate(x,y);
-               n.f = n.g + n.h;
-               queue.add(n);
-            }
-            if (current.nx < row-1 && map[current.nx + 1][current.ny] == ' ') {
-               Node n = new Node(current.nx + 1, current.ny, map[current.nx + 1][current.ny]);
-               n.parent = current;
-               n.g = current.g + COST;
-               n.getEstimate(x,y);
-               n.f = n.g + n.h;
-               queue.add(n);
-            }
-         }
-         if (found_goal) { // if we have found a path store it
-            List<Node> reverse = new ArrayList<Node>();
-            for (Node node = goal; node != start; node = node.parent) {
-               reverse.add(node);
-            }
-            for (int i = 0; i < reverse.size(); i++) {
-               path.add(i, reverse.get(reverse.size() - i - 1));
-            }
-            // make first move along the path
-            Node next = path.get(0);
-            int nextdirn = 0;
-            if (next.nx == r && next.ny == c + 1) {
-               nextdirn = EAST;
-            } else if (next.nx == r - 1 && next.ny == c) {
-               nextdirn = NORTH;
-            } else if (next.nx == r && next.ny == c - 1) {
-               nextdirn = WEST;
-            } else if (next.nx == r + 1 && next.ny == c) {
-               nextdirn = SOUTH;
-            }
-            if (dirn == nextdirn) {
-               ch = 'F';
-               path.remove(next);
-            } else if ((dirn + 1) % 4 == nextdirn) {
-               ch = 'L';
-               dirn = (dirn + 1) % 4;
-            } else {
-               ch = 'R';
-               dirn = (dirn + 3) % 4;
-            }
-         }
+         return nextMove(next);
+
       // agent knows the location of the gold and the path to it
-      } else if (!has_gold && found_gold && found_path) {
-         Node next = path.get(0);
-         int nextdirn = 0;
-         if (next.nx == r && next.ny == c + 1) {
-            nextdirn = EAST;
-         } else if (next.nx == r - 1 && next.ny == c) {
-            nextdirn = NORTH;
-         } else if (next.nx == r && next.ny == c - 1) {
-            nextdirn = WEST;
-         } else if (next.nx == r + 1 && next.ny == c) {
-            nextdirn = SOUTH;
+      } else if (!has_gold && found_gold) {
+         if(!found_path){ // if there isn't a path, try make one
+            Node gold = new Node(gx,gy,map[gx][gy]);
+            createPathTo(gold);
          }
-         if (dirn == nextdirn) {
-            ch = 'F';
-            if (next.nx == gx && next.ny == gy) {
-               has_gold = true;
-               found_path = false;
-            }
-            path.remove(next);
-         } else if ((dirn + 1) % 4 == nextdirn) {
-            ch = 'L';
-            dirn = (dirn + 1) % 4;
-         } else {
-            ch = 'R';
-            dirn = (dirn + 3) % 4;
-         }
-      // agent knows the location of the gold but needs to establish a path to it
-      } else if (!has_gold && found_gold && !found_path) {
-         PriorityQueue<Node> queue = new PriorityQueue<Node>(new Comparator<Node>() {
-            @Override
-            public int compare(Node o1, Node o2) {
-               if (o1.f > o2.f) {
-                  return 1;
-               } else if (o1.f < o2.f) {
-                  return -1;
-               } else {
-                  return 0;
-               }
-            }
-         });
-         Node start = new Node(r, c, map[r][c]);
-         start.parent = null;
-         start.g = 0;
-         start.getEstimate(gx,gy);
-         start.f = start.g + start.h;
-         queue.add(start);
-         boolean found_goal = false;
-         Node goal = null;
-         while (!queue.isEmpty() && !found_goal) {
-            Node current = queue.poll();
-            // goal reached and goal obtained
-            if (current.nx == gx && current.ny == gy) {
-               found_goal = true;
-               found_path = true;
-               goal = current;
-            }
-            // add neighbouring tiles that can be legally moved to
-            if (current.ny < col-1 && (map[current.nx][current.ny + 1] == ' ' || map[current.nx][current.ny + 1] == 'g')) {
-               Node n = new Node(current.nx, current.ny + 1, map[current.nx][current.ny + 1]);
-               n.parent = current;
-               n.g = current.g + COST;
-               n.getEstimate(gx,gy);
-               n.f = n.g + n.h;
-               queue.add(n);
-            }
-            if (current.nx > 0 && (map[current.nx - 1][current.ny] == ' ' || map[current.nx - 1][current.ny] == 'g')) {
-               Node n = new Node(current.nx - 1, current.ny, map[current.nx - 1][current.ny]);
-               n.parent = current;
-               n.g = current.g + COST;
-               n.getEstimate(gx,gy);
-               n.f = n.g + n.h;
-               queue.add(n);
-            }
-            if (current.ny > 0 && (map[current.nx][current.ny - 1] == ' ' || map[current.nx][current.ny - 1] == 'g')) {
-               Node n = new Node(current.nx, current.ny - 1, map[current.nx][current.ny - 1]);
-               n.parent = current;
-               n.g = current.g + COST;
-               n.getEstimate(gx,gy);
-               n.f = n.g + n.h;
-               queue.add(n);
-            }
-            if (current.nx < row-1 && (map[current.nx + 1][current.ny] == ' ' || map[current.nx + 1][current.ny] == 'g')) {
-               Node n = new Node(current.nx + 1, current.ny, map[current.nx + 1][current.ny]);
-               n.parent = current;
-               n.g = current.g + COST;
-               n.getEstimate(gx,gy);
-               n.f = n.g + n.h;
-               queue.add(n);
-            }
-         }
-         queue.clear();
-         if (found_goal) { // if we have found a path store it
-            List<Node> reverse = new ArrayList<Node>();
-            for (Node node = goal; node != start; node = node.parent) {
-               reverse.add(node);
-            }
-            for (int i = 0; i < reverse.size(); i++) {
-               path.add(i, reverse.get(reverse.size() - i - 1));
-            }
-            // make first move along the path
+         if(found_path) { // if the a path was successfully made
             Node next = path.get(0);
-            int nextdirn = 0;
-            if (next.nx == r && next.ny == c + 1) {
-               nextdirn = EAST;
-            } else if (next.nx == r - 1 && next.ny == c) {
-               nextdirn = NORTH;
-            } else if (next.nx == r && next.ny == c - 1) {
-               nextdirn = WEST;
-            } else if (next.nx == r + 1 && next.ny == c) {
-               nextdirn = SOUTH;
-            }
-            if (dirn == nextdirn) {
-               ch = 'F';
-               if (next.nx == gx && next.ny == gy) {
-                  has_gold = true;
-                  found_path = false;
-               }
-               path.remove(next);
-            } else if ((dirn + 1) % 4 == nextdirn) {
-               ch = 'L';
-               dirn = (dirn + 1) % 4;
-            } else {
-               ch = 'R';
-               dirn = (dirn + 3) % 4;
-            }
-         } else {
-            // agent needs to move randomly if path can't be established
+            return nextMove(next);
+         } else { // if you cannot reach gold at the moment
+            //TODO: traverse until path can be found
          }
          // agent is trying to find location of the gold
       } else {
