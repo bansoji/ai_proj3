@@ -110,7 +110,6 @@ public class Agent {
       // agent has the gold but needs to establish path to start position
       } else if (has_gold && !found_path) {
          path.clear();
-         Set<Node> expanded = new HashSet<Node>();
          PriorityQueue<Node> queue = new PriorityQueue<Node>(new Comparator<Node>() {
             @Override
             public int compare(Node o1, Node o2) {
@@ -133,7 +132,6 @@ public class Agent {
          Node goal = null;
          while (!queue.isEmpty() && !found_goal) {
             Node current = queue.poll();
-            expanded.add(current);
             // goal reached and goal obtained
             if (current.nx == x && current.ny == y) {
                found_goal = true;
@@ -141,7 +139,7 @@ public class Agent {
                goal = current;
             }
             // add neighbouring tiles that can be legally moved to
-            if (map[current.nx][current.ny + 1] == ' ') {
+            if (current.ny < col-1 && map[current.nx][current.ny + 1] == ' ') {
                Node n = new Node(current.nx, current.ny + 1, map[current.nx][current.ny + 1]);
                n.parent = current;
                n.g = current.g + COST;
@@ -149,7 +147,7 @@ public class Agent {
                n.f = n.g + n.h;
                queue.add(n);
             }
-            if (map[current.nx - 1][current.ny] == ' ') {
+            if (current.nx > 0 && map[current.nx - 1][current.ny] == ' ') {
                Node n = new Node(current.nx - 1, current.ny, map[current.nx - 1][current.ny]);
                n.parent = current;
                n.g = current.g + COST;
@@ -157,7 +155,7 @@ public class Agent {
                n.f = n.g + n.h;
                queue.add(n);
             }
-            if (map[current.nx][current.ny - 1] == ' ') {
+            if (current.ny > 0 && map[current.nx][current.ny - 1] == ' ') {
                Node n = new Node(current.nx, current.ny - 1, map[current.nx][current.ny - 1]);
                n.parent = current;
                n.g = current.g + COST;
@@ -165,7 +163,7 @@ public class Agent {
                n.f = n.g + n.h;
                queue.add(n);
             }
-            if (map[current.nx + 1][current.ny] == ' ') {
+            if (current.nx < row-1 && map[current.nx + 1][current.ny] == ' ') {
                Node n = new Node(current.nx + 1, current.ny, map[current.nx + 1][current.ny]);
                n.parent = current;
                n.g = current.g + COST;
@@ -234,7 +232,6 @@ public class Agent {
          }
       // agent knows the location of the gold but needs to establish a path to it
       } else if (!has_gold && found_gold && !found_path) {
-         Set<Node> expanded = new HashSet<Node>();
          PriorityQueue<Node> queue = new PriorityQueue<Node>(new Comparator<Node>() {
             @Override
             public int compare(Node o1, Node o2) {
@@ -257,7 +254,6 @@ public class Agent {
          Node goal = null;
          while (!queue.isEmpty() && !found_goal) {
             Node current = queue.poll();
-            expanded.add(current);
             // goal reached and goal obtained
             if (current.nx == gx && current.ny == gy) {
                found_goal = true;
@@ -265,7 +261,7 @@ public class Agent {
                goal = current;
             }
             // add neighbouring tiles that can be legally moved to
-            if (map[current.nx][current.ny + 1] == ' ' || map[current.nx][current.ny + 1] == 'g') {
+            if (current.ny < col-1 && (map[current.nx][current.ny + 1] == ' ' || map[current.nx][current.ny + 1] == 'g')) {
                Node n = new Node(current.nx, current.ny + 1, map[current.nx][current.ny + 1]);
                n.parent = current;
                n.g = current.g + COST;
@@ -273,7 +269,7 @@ public class Agent {
                n.f = n.g + n.h;
                queue.add(n);
             }
-            if (map[current.nx - 1][current.ny] == ' ' || map[current.nx - 1][current.ny] == 'g') {
+            if (current.nx > 0 && (map[current.nx - 1][current.ny] == ' ' || map[current.nx - 1][current.ny] == 'g')) {
                Node n = new Node(current.nx - 1, current.ny, map[current.nx - 1][current.ny]);
                n.parent = current;
                n.g = current.g + COST;
@@ -281,7 +277,7 @@ public class Agent {
                n.f = n.g + n.h;
                queue.add(n);
             }
-            if (map[current.nx][current.ny - 1] == ' ' || map[current.nx][current.ny - 1] == 'g') {
+            if (current.ny > 0 && (map[current.nx][current.ny - 1] == ' ' || map[current.nx][current.ny - 1] == 'g')) {
                Node n = new Node(current.nx, current.ny - 1, map[current.nx][current.ny - 1]);
                n.parent = current;
                n.g = current.g + COST;
@@ -289,7 +285,7 @@ public class Agent {
                n.f = n.g + n.h;
                queue.add(n);
             }
-            if (map[current.nx + 1][current.ny] == ' ' || map[current.nx + 1][current.ny] == 'g') {
+            if (current.nx < row-1 && (map[current.nx + 1][current.ny] == ' ' || map[current.nx + 1][current.ny] == 'g')) {
                Node n = new Node(current.nx + 1, current.ny, map[current.nx + 1][current.ny]);
                n.parent = current;
                n.g = current.g + COST;
