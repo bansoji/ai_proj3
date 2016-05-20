@@ -138,6 +138,7 @@ public class Agent {
 
    private char nextMove(Node next){
       int nextdirn = 0;
+      char move;
       if (next.nx == r && next.ny == c + 1) {
          nextdirn = EAST;
       } else if (next.nx == r - 1 && next.ny == c) {
@@ -149,14 +150,15 @@ public class Agent {
       }
       if (dirn == nextdirn) {
          path.remove(next);
-         return 'F';
+         move = 'F';
       } else if ((dirn + 1) % 4 == nextdirn) {
          dirn = (dirn + 1) % 4;
-         return 'L';
+         move = 'L';
       } else {
          dirn = (dirn + 3) % 4;
-         return 'R';
+         move = 'R';
       }
+      return move;
    }
 
    public char get_action( char view[][] ) {
@@ -187,10 +189,6 @@ public class Agent {
          found_path = false;
       }
 
-      // if agent has gold and is on start position
-      if(has_gold && (r == gx && c == gy)){
-         //TODO: we're done
-      }
 
       char ch = 'L';
       int rn;
@@ -204,7 +202,7 @@ public class Agent {
 
          }
          Node next = path.get(0);
-         return nextMove(next);
+         ch = nextMove(next);
 
       // agent knows the location of the gold and the path to it
       } else if (!has_gold && found_gold) {
@@ -214,7 +212,7 @@ public class Agent {
          }
          if(found_path) { // if the a path was successfully made
             Node next = path.get(0);
-            return nextMove(next);
+            ch = nextMove(next);
          } else { // if you cannot reach gold at the moment
             //TODO: traverse until path can be found
          }
