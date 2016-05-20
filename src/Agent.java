@@ -41,8 +41,8 @@ public class Agent {
 
    class Node {
       public Node parent;
-      public int nx;
-      public int ny;
+      private int nx;
+      private int ny;
       public char nch;
       public double f;
       public double g;
@@ -52,6 +52,11 @@ public class Agent {
          nx = x;
          ny = y;
          nch = ch;
+      }
+
+      @Override
+      public boolean equals(Object other){
+         return (this.nx == ((Node) other).nx && this.ny == ((Node)other).ny);
       }
 
       public void getEstimate(int x, int y) {
@@ -73,7 +78,7 @@ public class Agent {
             }
          }
       });
-
+      ArrayList<Node> expanded = new ArrayList<Node>();
       Node start = new Node(r, c, map[r][c]);
       start.parent = null;
       start.g = 0;
@@ -97,7 +102,10 @@ public class Agent {
             n.g = current.g + COST;
             n.getEstimate(to.nx,to.ny);
             n.f = n.g + n.h;
-            queue.add(n);
+            if(!expanded.contains(n)) {
+               queue.add(n);
+               expanded.add(n);
+            }
          }
          if (current.nx > 0 && (map[current.nx - 1][current.ny] == ' ' || map[current.nx - 1][current.ny] == 'g')) {
             Node n = new Node(current.nx - 1, current.ny, map[current.nx - 1][current.ny]);
@@ -105,7 +113,10 @@ public class Agent {
             n.g = current.g + COST;
             n.getEstimate(to.nx,to.ny);
             n.f = n.g + n.h;
-            queue.add(n);
+            if(!expanded.contains(n)) {
+               queue.add(n);
+               expanded.add(n);
+            }
          }
          if (current.ny > 0 && (map[current.nx][current.ny - 1] == ' ' || map[current.nx][current.ny - 1] == 'g')) {
             Node n = new Node(current.nx, current.ny - 1, map[current.nx][current.ny - 1]);
@@ -113,7 +124,10 @@ public class Agent {
             n.g = current.g + COST;
             n.getEstimate(to.nx,to.ny);
             n.f = n.g + n.h;
-            queue.add(n);
+            if(!expanded.contains(n)) {
+               queue.add(n);
+               expanded.add(n);
+            }
          }
          if (current.nx < row-1 && (map[current.nx + 1][current.ny] == ' ' || map[current.nx + 1][current.ny] == 'g')) {
             Node n = new Node(current.nx + 1, current.ny, map[current.nx + 1][current.ny]);
@@ -121,7 +135,10 @@ public class Agent {
             n.g = current.g + COST;
             n.getEstimate(to.nx,to.ny);
             n.f = n.g + n.h;
-            queue.add(n);
+            if(!expanded.contains(n)) {
+               queue.add(n);
+               expanded.add(n);
+            }
          }
       }
       if (found_goal) { // if we have found a path store it
@@ -134,6 +151,19 @@ public class Agent {
          }
 
       }
+   }
+
+   private boolean isVisited(){
+      if(dirn == NORTH){
+         return visited[r][c-1];
+      } else if (dirn == EAST) {
+         return visited[r-1][c];
+      } else if (dirn == SOUTH){
+         return visited[r][c+1];
+      } else if (dirn == WEST){
+         return visited[r+1][c];
+      }
+      return false;
    }
 
    private char nextMove(Node next){
@@ -162,6 +192,7 @@ public class Agent {
    }
 
    public char get_action( char view[][] ) {
+
       if (moves == 0) {
          switch (view[2][2]) {
             case '^':
@@ -199,7 +230,6 @@ public class Agent {
             path.clear();
             Node start = new Node(x,y,map[x][y]);
             createPathTo(start);
-
          }
          Node next = path.get(0);
          ch = nextMove(next);
@@ -218,53 +248,85 @@ public class Agent {
          }
          // agent is trying to find location of the gold
       } else {
-         if (view[1][2] == '~' || view[1][2] == '*' || view[1][2] == 'T' || view[1][2] == '-') {
-            if (view[2][1] == '~' || view[2][1] == '*' || view[2][1] == 'T' || view[2][1] == '-') {
+         char front = view[1][2];
+         char left = view[2][1];
+         char right = view[2][3];
+
+         // code isnt complete, there are cases that have not been covered yet.
+
+         // if there is a wall in front
+         if(front == '~' || front == '*' || front == 'T'){
+
+            // and a wall to the left
+            if(left == '~' || left == '*' || left == 'T'){
                ch = 'R';
                dirn = (dirn + 3) % 4;
-            } else if (view[2][3] == '~' || view[2][3] == '*' || view[2][3] == 'T' || view[2][3] == '-') {
+
+               // or a wall to the right
+            } else if(right == '~' || right == '*' || right == 'T'){
                ch = 'L';
                dirn = (dirn + 1) % 4;
+               // or there are nothing on the sides but a wall in front
             } else {
-               rn = ran.nextInt(2);
-               if (rn == 0) {
-                  ch = 'L';
-                  dirn = (dirn + 1) % 4;
-               } else {
-                  ch = 'R';
-                  dirn = (dirn + 3) % 4;
-               }
+               ch = 'L';
+               dirn = (dirn + 1) % 4;
             }
-         } else {
-            if (view[2][1] == '~' || view[2][1] == '*' || view[2][1] == 'T' || view[2][1] == '-') {
-               rn = ran.nextInt(2);
-               if (rn == 0) {
-                  ch = 'F';
-               } else {
-                  ch = 'R';
-                  dirn = (dirn + 3) % 4;
-               }
-            } else if (view[2][3] == '~' || view[2][3] == '*' || view[2][3] == 'T' || view[2][3] == '-') {
-               rn = ran.nextInt(2);
-               if (rn == 0) {
-                  ch = 'F';
-               } else {
-                  ch = 'L';
-                  dirn = (dirn + 1) % 4;
-               }
-            } else {
-               rn = ran.nextInt(4);
-               if (rn == 0) {
-                  ch = 'L';
-                  dirn = (dirn + 1) % 4;
-               } else if (rn == 1) {
-                  ch = 'R';
-                  dirn = (dirn + 3) % 4;
-               } else {
-                  ch = 'F';
-               }
-            }
+            // if the first left turn u come across is not visited then turn left
+         } else if (left == ' ' && !isVisited() && (view[3][1] == '*' || view[3][1] == '~' || view[3][1] == 'T')){
+            ch = 'L';
+            dirn = (dirn + 1) % 4;
+            // else you go forward until you find a wall
+         } else if(front == ' '){
+            ch = 'F';
          }
+
+//         if (view[1][2] == '~' || view[1][2] == '*' || view[1][2] == 'T' || view[1][2] == '-') {
+//            if (view[2][1] == '~' || view[2][1] == '*' || view[2][1] == 'T' || view[2][1] == '-') {
+//               ch = 'R';
+//               dirn = (dirn + 3) % 4;
+//            } else if (view[2][3] == '~' || view[2][3] == '*' || view[2][3] == 'T' || view[2][3] == '-') {
+//               ch = 'L';
+//               dirn = (dirn + 1) % 4;
+//            } else {
+//               rn = ran.nextInt(2);
+//               if (rn == 0) {
+//                  ch = 'L';
+//                  dirn = (dirn + 1) % 4;
+//               } else {
+//                  ch = 'R';
+//                  dirn = (dirn + 3) % 4;
+//               }
+//            }
+//         } else {
+//            if (view[2][1] == '~' || view[2][1] == '*' || view[2][1] == 'T' || view[2][1] == '-') {
+//               rn = ran.nextInt(2);
+//               if (rn == 0) {
+//                  ch = 'F';
+//               } else {
+//                  ch = 'R';
+//                  dirn = (dirn + 3) % 4;
+//               }
+//            } else if (view[2][3] == '~' || view[2][3] == '*' || view[2][3] == 'T' || view[2][3] == '-') {
+//               rn = ran.nextInt(2);
+//               if (rn == 0) {
+//                  ch = 'F';
+//               } else {
+//                  ch = 'L';
+//                  dirn = (dirn + 1) % 4;
+//               }
+//            } else {
+//               rn = ran.nextInt(4);
+//               if (rn == 0) {
+//                  ch = 'L';
+//                  dirn = (dirn + 1) % 4;
+//               } else if (rn == 1) {
+//                  ch = 'R';
+//                  dirn = (dirn + 3) % 4;
+//               } else {
+//                  ch = 'F';
+//               }
+//            }
+//         }
       }
       moves++;
       print_map();
