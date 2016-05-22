@@ -37,7 +37,6 @@ public class Agent {
    public List<Node> path = new ArrayList<Node>();
    public List<Point> axes = new ArrayList<Point>();
    public List<Point> keys = new ArrayList<Point>();
-   public List<Point> doors = new ArrayList<Point>();
    public boolean has_axe = false;
    public boolean has_key = false;
    public boolean has_gold = false;
@@ -101,7 +100,8 @@ public class Agent {
             goal = current;
          }
          // add neighbouring tiles that can be legally moved to
-         if (current.ny < col-1 && (map[current.nx][current.ny + 1] == ' ' || map[current.nx][current.ny + 1] == 'g')) {
+         if (current.ny < col-1 && (map[current.nx][current.ny+1] == ' ' || map[current.nx][current.ny+1] == 'g' ||
+                 (has_axe && map[current.nx][current.ny+1] == 'T') || (has_key && map[current.nx][current.ny+1] == '-'))) {
             Node n = new Node(current.nx, current.ny + 1, map[current.nx][current.ny + 1]);
             n.parent = current;
             n.g = current.g + COST;
@@ -112,7 +112,8 @@ public class Agent {
                expanded.add(n);
             }
          }
-         if (current.nx > 0 && (map[current.nx - 1][current.ny] == ' ' || map[current.nx - 1][current.ny] == 'g')) {
+         if (current.nx > 0 && (map[current.nx-1][current.ny] == ' ' || map[current.nx-1][current.ny] == 'g' ||
+                 (has_axe && map[current.nx-1][current.ny] == 'T') || (has_key && map[current.nx-1][current.ny] == '-'))) {
             Node n = new Node(current.nx - 1, current.ny, map[current.nx - 1][current.ny]);
             n.parent = current;
             n.g = current.g + COST;
@@ -123,7 +124,8 @@ public class Agent {
                expanded.add(n);
             }
          }
-         if (current.ny > 0 && (map[current.nx][current.ny - 1] == ' ' || map[current.nx][current.ny - 1] == 'g')) {
+         if (current.ny > 0 && (map[current.nx][current.ny-1] == ' ' || map[current.nx][current.ny-1] == 'g' ||
+                 (has_axe && map[current.nx][current.ny-1] == 'T') || (has_key && map[current.nx][current.ny-1] == '-'))) {
             Node n = new Node(current.nx, current.ny - 1, map[current.nx][current.ny - 1]);
             n.parent = current;
             n.g = current.g + COST;
@@ -134,7 +136,8 @@ public class Agent {
                expanded.add(n);
             }
          }
-         if (current.nx < row-1 && (map[current.nx + 1][current.ny] == ' ' || map[current.nx + 1][current.ny] == 'g')) {
+         if (current.nx < row-1 && (map[current.nx+1][current.ny] == ' ' || map[current.nx+1][current.ny] == 'g'  ||
+                 (has_axe && map[current.nx+1][current.ny] == 'T') || (has_key && map[current.nx+1][current.ny] == '-'))) {
             Node n = new Node(current.nx + 1, current.ny, map[current.nx + 1][current.ny]);
             n.parent = current;
             n.g = current.g + COST;
@@ -198,7 +201,13 @@ public class Agent {
       }
       if (dirn == nextdirn) {
          path.remove(next);
-         move = 'F';
+         if (next.nch == 'T') {
+            move = 'C';
+         } else if (next.nch == '-') {
+            move = 'U';
+         } else {
+            move = 'F';
+         }
       } else if ((dirn + 1) % 4 == nextdirn) {
          dirn = (dirn + 1) % 4;
          move = 'L';
@@ -209,7 +218,7 @@ public class Agent {
       return move;
    }
 
-   public char explore(char view[][]) {
+   public char simpleMove(char view[][]) {
 
       char ch;
       char front = view[1][2];
@@ -235,15 +244,15 @@ public class Agent {
             dirn = (dirn + 1) % 4;
          }
          // if the first left turn we come across is not visited then turn left
-      } else if (front == ' ' && !isVisited('F')){
+      } else if ((front == ' ' || front == 'a' || front == 'k') && !isVisited('F')){
          ch = 'F';
 
-      } else if (left == ' ' && !isVisited('L') && (view[3][1] == '*' || view[3][1] == '~' ||
+      } else if ((left == ' ' || left == 'a' || left == 'k') && !isVisited('L') && (view[3][1] == '*' || view[3][1] == '~' ||
               (!has_axe && view[3][1] == 'T') || (!has_key && view[3][1] == '-'))) {
          ch = 'L';
          dirn = (dirn + 1) % 4;
 
-      } else if (right == ' ' && isVisited('F')){
+      } else if ((right == ' ' || right == 'a' || right == 'k') && isVisited('F')){
          ch = 'R';
          dirn = (dirn + 3) % 4;
          // else you go forward until you find a wall
@@ -263,6 +272,57 @@ public class Agent {
             ch = 'R';
             dirn = (dirn + 3) % 4;
          }
+      }
+      return ch;
+   }
+
+   public char explore(char view[][]) {
+      char ch;
+      if (!has_axe && axes.size() > 0) { // if axe location is known try to find a path to an axe
+         for (Point p : axes) {
+            Node axe = new Node(p.x,p.y,map[p.x][p.y]);
+            createPathTo(axe);
+            if (found_path) {
+               break;
+            }
+         }
+         if(found_path) { // if the agent has found an axe follow the path
+            Node next = path.get(0);
+            ch = nextMove(next);
+         } else if (!has_key && keys.size() > 0) { // if the agent can't get an axe look for a key
+            for (Point p : keys) {
+               Node key = new Node(p.x, p.y, map[p.x][p.y]);
+               createPathTo(key);
+               if (found_path) {
+                  break;
+               }
+            }
+            if (found_path) { // if the a path was successfully made
+               Node next = path.get(0);
+               ch = nextMove(next);
+            } else {
+               ch = simpleMove(view);
+            }
+         } else {
+            ch = simpleMove(view);
+         }
+         // look for a key
+      } else if (!has_key && keys.size() > 0) {
+         for (Point p : keys) {
+            Node key = new Node(p.x,p.y,map[p.x][p.y]);
+            createPathTo(key);
+            if (found_path) {
+               break;
+            }
+         }
+         if(found_path) { // if the a path was successfully made
+            Node next = path.get(0);
+            ch = nextMove(next);
+         } else {
+            ch = simpleMove(view);
+         }
+      } else {
+         ch = simpleMove(view);
       }
       return ch;
    }
@@ -295,7 +355,6 @@ public class Agent {
          has_gold = true;
          found_path = false;
       }
-
       for (Point p : axes) {
          if (r == p.x && c == p.y) {
             has_axe = true;
@@ -307,7 +366,7 @@ public class Agent {
          }
       }
 
-      char ch = 'L';
+      char ch;
       // agent has the gold
       if (has_gold) {
          if(!found_path){ // if there isn't a path, generate one
@@ -323,16 +382,21 @@ public class Agent {
             Node gold = new Node(gx,gy,map[gx][gy]);
             createPathTo(gold);
          }
-         if(found_path) { // if the a path was successfully made
+         if(found_path) { // if a path was successfully made
             Node next = path.get(0);
             ch = nextMove(next);
-         } else { // if you cannot reach gold at the moment
+         } else { // if gold cannot be reached try and find an axe or key
             ch = explore(view);
          }
 
       // agent is trying to find location of the gold
       } else {
-         ch = explore(view);
+         if(found_path) { // if a path to an axe or key was found follow it
+            Node next = path.get(0);
+            ch = nextMove(next);
+         } else { // try and find an axe or key or move to unvisited
+            ch = explore(view);
+         }
       }
       moves++;
       print_map();
