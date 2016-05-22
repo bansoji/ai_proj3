@@ -42,6 +42,7 @@ public class Agent {
    public boolean has_gold = false;
    public boolean map_updated = false;
    private final int COST = 1;
+   private boolean turning = false;
 
    class Node {
       public Node parent;
@@ -101,7 +102,8 @@ public class Agent {
          }
          // add neighbouring tiles that can be legally moved to
          if (current.ny < col-1 && (map[current.nx][current.ny+1] == ' ' || map[current.nx][current.ny+1] == 'g' ||
-                 (has_axe && map[current.nx][current.ny+1] == 'T') || (has_key && map[current.nx][current.ny+1] == '-'))) {
+                 (has_axe && map[current.nx][current.ny+1] == 'T') || (has_key && map[current.nx][current.ny+1] == '-')
+                 || map[current.nx][current.ny+1] == 'a' || map[current.nx][current.ny+1] == 'k')) {
             Node n = new Node(current.nx, current.ny + 1, map[current.nx][current.ny + 1]);
             n.parent = current;
             n.g = current.g + COST;
@@ -113,7 +115,8 @@ public class Agent {
             }
          }
          if (current.nx > 0 && (map[current.nx-1][current.ny] == ' ' || map[current.nx-1][current.ny] == 'g' ||
-                 (has_axe && map[current.nx-1][current.ny] == 'T') || (has_key && map[current.nx-1][current.ny] == '-'))) {
+                 (has_axe && map[current.nx-1][current.ny] == 'T') || (has_key && map[current.nx-1][current.ny] == '-')
+                 || map[current.nx-1][current.ny] == 'a' || map[current.nx-1][current.ny] == 'k')) {
             Node n = new Node(current.nx - 1, current.ny, map[current.nx - 1][current.ny]);
             n.parent = current;
             n.g = current.g + COST;
@@ -125,7 +128,8 @@ public class Agent {
             }
          }
          if (current.ny > 0 && (map[current.nx][current.ny-1] == ' ' || map[current.nx][current.ny-1] == 'g' ||
-                 (has_axe && map[current.nx][current.ny-1] == 'T') || (has_key && map[current.nx][current.ny-1] == '-'))) {
+                 (has_axe && map[current.nx][current.ny-1] == 'T') || (has_key && map[current.nx][current.ny-1] == '-')
+                 || map[current.nx][current.ny-1] == 'a' || map[current.nx][current.ny-1] == 'k')) {
             Node n = new Node(current.nx, current.ny - 1, map[current.nx][current.ny - 1]);
             n.parent = current;
             n.g = current.g + COST;
@@ -137,7 +141,8 @@ public class Agent {
             }
          }
          if (current.nx < row-1 && (map[current.nx+1][current.ny] == ' ' || map[current.nx+1][current.ny] == 'g'  ||
-                 (has_axe && map[current.nx+1][current.ny] == 'T') || (has_key && map[current.nx+1][current.ny] == '-'))) {
+                 (has_axe && map[current.nx+1][current.ny] == 'T') || (has_key && map[current.nx+1][current.ny] == '-')
+                 || map[current.nx+1][current.ny] == 'a' || map[current.nx+1][current.ny] == 'k')) {
             Node n = new Node(current.nx + 1, current.ny, map[current.nx + 1][current.ny]);
             n.parent = current;
             n.g = current.g + COST;
@@ -183,6 +188,16 @@ public class Agent {
          } else if (dirn == WEST) {
             return visited[r][c-1];
          }
+      } else if (dir == 'R'){
+         if (dirn == NORTH) {
+            return visited[r][c+1];
+         } else if (dirn == EAST) {
+            return visited[r+1][c];
+         } else if (dirn == SOUTH) {
+            return visited[r][c-1];
+         } else if (dirn == WEST) {
+            return visited[r-1][c];
+         }
       }
       return false;
    }
@@ -200,13 +215,16 @@ public class Agent {
          nextdirn = SOUTH;
       }
       if (dirn == nextdirn) {
-         path.remove(next);
+
          if (next.nch == 'T') {
             move = 'C';
+            next.nch = ' ';
          } else if (next.nch == '-') {
             move = 'U';
+            next.nch = ' ';
          } else {
             move = 'F';
+            path.remove(next);
          }
       } else if ((dirn + 1) % 4 == nextdirn) {
          dirn = (dirn + 1) % 4;
@@ -226,42 +244,77 @@ public class Agent {
       char right = view[2][3];
 
       // code isn't complete, there are cases that have not been covered yet.
+      if (has_axe && front == 'T') {
+         ch = 'C';
+      } else if (has_axe && left == 'T') {
+         ch = 'L';
+         dirn = (dirn + 1) % 4;
+      } else if (has_axe && right == 'T'){
+         ch = 'R';
+         dirn = (dirn + 3) % 4;
+      } else if (has_key && front == '-') {
+         ch = 'U';
+      } else if (has_key && left == '-') {
+         ch = 'L';
+         dirn = (dirn + 1) % 4;
+      } else if (has_key && right == '-'){
+         ch = 'R';
+         dirn = (dirn + 3) % 4;
 
-      // if there is a wall in front
-      if (front == '~' || front == '*' || (!has_axe && front == 'T') || (!has_key && front == '-')) {
+         // if there is a wall in front
+      } else if (front == '~' || front == '*' || (!has_axe && front == 'T') || (!has_key && front == '-')) {
          // and a wall to the left
          if (left == '~' || left == '*' || (!has_axe && left == 'T') || (!has_key && left == '-')) {
             ch = 'R';
             dirn = (dirn + 3) % 4;
+            turning = true;
 
             // or a wall to the right
          } else if (right == '~' || right == '*' || (!has_axe && right == 'T') || (!has_key && right == '-')) {
             ch = 'L';
             dirn = (dirn + 1) % 4;
+            turning = true;
             // or there are nothing on the sides but a wall in front
          } else {
-            ch = 'L';
-            dirn = (dirn + 1) % 4;
+            if(isVisited('L') && isVisited('R')){
+               Random ran = new Random();
+               if (ran.nextInt(2) == 0){
+                  ch = 'R';
+                  dirn = (dirn + 3) % 4;
+               } else {
+                  ch = 'L';
+                  dirn = (dirn + 1) % 4;
+               }
+            } else if(isVisited('L')){
+               ch = 'R';
+               dirn = (dirn + 3) % 4;
+            } else {
+               ch = 'L';
+               dirn = (dirn + 1) % 4;
+            }
+            turning = true;
+
          }
          // if the first left turn we come across is not visited then turn left
       } else if ((front == ' ' || front == 'a' || front == 'k') && !isVisited('F')){
          ch = 'F';
+         turning = false;
 
-      } else if ((left == ' ' || left == 'a' || left == 'k') && !isVisited('L') && (view[3][1] == '*' || view[3][1] == '~' ||
-              (!has_axe && view[3][1] == 'T') || (!has_key && view[3][1] == '-'))) {
+      } else if ((left == ' ' || left == 'a' || left == 'k') && (!isVisited('L') || (isVisited('F') && isVisited('L'))) && (view[3][1] == '*' || view[3][1] == '~' ||
+              (!has_axe && view[3][1] == 'T') || (!has_key && view[3][1] == '-')) && !turning) {
          ch = 'L';
          dirn = (dirn + 1) % 4;
+         turning = true;
 
-      } else if ((right == ' ' || right == 'a' || right == 'k') && isVisited('F')){
-         ch = 'R';
-         dirn = (dirn + 3) % 4;
+//      } else if ((right == ' ' || right == 'a' || right == 'k') && isVisited('F')){
+//         ch = 'R';
+//         dirn = (dirn + 3) % 4;
+//
          // else you go forward until you find a wall
       } else if (front == ' ') {
          ch = 'F';
-      } else if (has_axe && front == 'T') {
-         ch = 'C';
-      } else if (has_key && front == '-') {
-         ch = 'U';
+         turning = false;
+
       } else {
          Random ran = new Random();
          int rn = ran.nextInt(2);
@@ -346,7 +399,7 @@ public class Agent {
          }
          create_map(view);
       }
-      if (prev == 'F' || prev == 'C' || prev == 'U') {
+      if (prev == 'F') {
             update_map(view);
       }
 
@@ -355,14 +408,21 @@ public class Agent {
          has_gold = true;
          found_path = false;
       }
-      for (Point p : axes) {
-         if (r == p.x && c == p.y) {
-            has_axe = true;
+      if(!has_axe) {
+         for (Point p : axes) {
+            if (r == p.x && c == p.y) {
+               has_axe = true;
+               found_path = false;
+            }
          }
       }
-      for (Point p : keys) {
-         if (r == p.x && c == p.y) {
-            has_key = true;
+
+      if(!has_key) {
+         for (Point p : keys) {
+            if (r == p.x && c == p.y) {
+               has_key = true;
+               found_path = false;
+            }
          }
       }
 
@@ -378,6 +438,7 @@ public class Agent {
 
       // agent doesn't have the gold but knows the location of it
       } else if (!has_gold && found_gold) {
+
          if(!found_path){ // if there isn't a path, try make one
             Node gold = new Node(gx,gy,map[gx][gy]);
             createPathTo(gold);
@@ -553,6 +614,11 @@ public class Agent {
                for (Point p : keys) {
                   p.x++;
                }
+               if (path.size() > 0) {
+                  for (Node pnode : path) {
+                     pnode.nx++;
+                  }
+               }
             }
             for (int i = -2; i <= 2; i++) {        // update map with current view
                map[r-2][c+i] = view[0][i+2];
@@ -606,6 +672,11 @@ public class Agent {
                }
                for (Point p : keys) {
                   p.y++;
+               }
+               if (path.size() > 0) {
+                  for (Node pnode : path) {
+                     pnode.ny++;
+                  }
                }
             }
             for (int i = -2; i <= 2; i++) {        // update map with current view
