@@ -399,9 +399,7 @@ public class Agent {
          }
          create_map(view);
       }
-      if (prev == 'F') {
-            update_map(view);
-      }
+      update_map(view);
 
       // if agent is now on gold, axe, or key update data
       if (r == gx && c == gy) {
@@ -550,197 +548,209 @@ public class Agent {
    }
 
    void update_map(char view[][]) {
-      if (dirn == EAST) {
-         c++;
-         if (!visited[r][c]) {
-            if (c+2 == col) {                      // if we need to expand map to the right
-               for (int i = 0; i < row; i++) {     // add another column
-                  map[i][col] = '?';
-                  visited[i][col]= false;
-                  unvisited.add(new Point(i,col));
+      if (prev == 'F') {
+         if (dirn == EAST) {
+            c++;
+            if (!visited[r][c]) {
+               if (c + 2 == col) {                      // if we need to expand map to the right
+                  for (int i = 0; i < row; i++) {     // add another column
+                     map[i][col] = '?';
+                     visited[i][col] = false;
+                     unvisited.add(new Point(i, col));
+                  }
+                  col++;
                }
-               col++;
-            }
-            for (int i = -2; i <= 2; i++) {        // update map with current view
-               map[r+i][c+2] = view[0][i+2];
-               if (map[r+i][c+2] == 'g') {
-                  found_gold = true;
-                  gx = r+i;
-                  gy = c+2;
-               }
-               if (map[r+i][c+2] == 'a') {
-                  Point p = new Point(r+i,c+2);
-                  if (!axes.contains(p)) {
-                     axes.add(p);
+               for (int i = -2; i <= 2; i++) {        // update map with current view
+                  map[r + i][c + 2] = view[0][i + 2];
+                  if (map[r + i][c + 2] == 'g') {
+                     found_gold = true;
+                     gx = r + i;
+                     gy = c + 2;
+                  }
+                  if (map[r + i][c + 2] == 'a') {
+                     Point p = new Point(r + i, c + 2);
+                     if (!axes.contains(p)) {
+                        axes.add(p);
+                     }
+                  }
+                  if (map[r + i][c + 2] == 'k') {
+                     Point p = new Point(r + i, c + 2);
+                     if (!keys.contains(p)) {
+                        keys.add(p);
+                     }
                   }
                }
-               if (map[r+i][c+2] == 'k') {
-                  Point p = new Point(r+i,c+2);
-                  if (!keys.contains(p)) {
-                     keys.add(p);
+               visited[r][c] = true;
+               unvisited.remove(new Point(r, c));
+               map_updated = true;
+            } else {
+               map_updated = false;
+            }
+         } else if (dirn == NORTH) {
+            r--;
+            if (!visited[r][c]) {
+               if (r - 2 < 0) {                         // if we need to expand map up
+                  for (int i = row; i > 0; i--) {     // add a row by shifting array down a row
+                     for (int j = 0; j < col; j++) {
+                        map[i][j] = map[i - 1][j];
+                        visited[i][j] = visited[i - 1][j];
+                     }
+                  }
+                  for (int j = 0; j < col; j++) {     // initialise first row
+                     map[0][j] = '?';
+                     visited[0][j] = false;
+                     unvisited.add(new Point(0, j));
+                  }
+                  row++;
+                  r++;
+                  x++;
+                  if (found_gold) {
+                     gx++;
+                  }
+                  for (Point p : axes) {
+                     p.x++;
+                  }
+                  for (Point p : keys) {
+                     p.x++;
+                  }
+                  if (path.size() > 0) {
+                     for (Node pnode : path) {
+                        pnode.nx++;
+                     }
                   }
                }
+               for (int i = -2; i <= 2; i++) {        // update map with current view
+                  map[r - 2][c + i] = view[0][i + 2];
+                  if (map[r - 2][c + i] == 'g') {
+                     found_gold = true;
+                     gx = r - 2;
+                     gy = c + i;
+                  }
+                  if (map[r - 2][c + i] == 'a') {
+                     Point p = new Point(r - 2, c + i);
+                     if (!axes.contains(p)) {
+                        axes.add(p);
+                     }
+                  }
+                  if (map[r - 2][c + i] == 'k') {
+                     Point p = new Point(r - 2, c + i);
+                     if (!keys.contains(p)) {
+                        keys.add(p);
+                     }
+                  }
+               }
+               visited[r][c] = true;
+               unvisited.remove(new Point(r, c));
+               map_updated = true;
+            } else {
+               map_updated = false;
             }
-            visited[r][c] = true;
-            unvisited.remove(new Point(r,c));
-            map_updated = true;
-         } else {
-            map_updated = false;
+         } else if (dirn == WEST) {
+            c--;
+            if (!visited[r][c]) {
+               if (c - 2 < 0) {                         // if we need to expand map to the left
+                  for (int i = 0; i < row; i++) {     // add a column by shifting array to the right
+                     for (int j = col; j > 0; j--) {
+                        map[i][j] = map[i][j - 1];
+                        visited[i][j] = visited[i][j - 1];
+                     }
+                  }
+                  for (int i = 0; i < row; i++) {     // initialise first column
+                     map[i][0] = '?';
+                     visited[i][0] = false;
+                     unvisited.add(new Point(i, 0));
+                  }
+                  col++;
+                  c++;
+                  y++;
+                  if (found_gold) {
+                     gy++;
+                  }
+                  for (Point p : axes) {
+                     p.y++;
+                  }
+                  for (Point p : keys) {
+                     p.y++;
+                  }
+                  if (path.size() > 0) {
+                     for (Node pnode : path) {
+                        pnode.ny++;
+                     }
+                  }
+               }
+               for (int i = -2; i <= 2; i++) {        // update map with current view
+                  map[r + i][c - 2] = view[0][2 - i];
+                  if (map[r + i][c - 2] == 'g' && !found_gold) {
+                     found_gold = true;
+                     gx = r + i;
+                     gy = c - 2;
+                  }
+                  if (map[r + i][c - 2] == 'a') {
+                     Point p = new Point(r + i, c - 2);
+                     if (!axes.contains(p)) {
+                        axes.add(p);
+                     }
+                  }
+                  if (map[r + i][c - 2] == 'k') {
+                     Point p = new Point(r + i, c - 2);
+                     if (!keys.contains(p)) {
+                        keys.add(p);
+                     }
+                  }
+               }
+               visited[r][c] = true;
+               unvisited.remove(new Point(r, c));
+               map_updated = true;
+            } else {
+               map_updated = false;
+            }
+         } else if (dirn == SOUTH) {
+            r++;
+            if (!visited[r][c]) {
+               if (r + 2 == row) {                      // if we need to expand map down
+                  for (int j = 0; j < col; j++) {     // add another row
+                     map[row][j] = '?';
+                     visited[row][j] = false;
+                     unvisited.add(new Point(row, j));
+                  }
+                  row++;
+               }
+               for (int i = -2; i <= 2; i++) {        // update map with current view
+                  map[r + 2][c + i] = view[0][2 - i];
+                  if (map[r + 2][c + i] == 'g' && !found_gold) {
+                     found_gold = true;
+                     gx = r + 2;
+                     gy = c + i;
+                  }
+                  if (map[r + 2][c + i] == 'a') {
+                     Point p = new Point(r + 2, c + i);
+                     if (!axes.contains(p)) {
+                        axes.add(p);
+                     }
+                  }
+                  if (map[r + 2][c + i] == 'k') {
+                     Point p = new Point(r + 2, c + i);
+                     if (!keys.contains(p)) {
+                        keys.add(p);
+                     }
+                  }
+               }
+               visited[r][c] = true;
+               unvisited.remove(new Point(r, c));
+               map_updated = true;
+            } else {
+               map_updated = false;
+            }
          }
-      } else if (dirn == NORTH) {
-         r--;
-         if (!visited[r][c]) {
-            if (r-2 < 0) {                         // if we need to expand map up
-               for (int i = row; i > 0; i--) {     // add a row by shifting array down a row
-                  for (int j = 0; j < col; j++) {
-                     map[i][j] = map[i-1][j];
-                     visited[i][j] = visited[i-1][j];
-                  }
-               }
-               for (int j = 0; j < col; j++) {     // initialise first row
-                  map[0][j] = '?';
-                  visited[0][j] = false;
-                  unvisited.add(new Point(0,j));
-               }
-               row++;
-               r++;
-               x++;
-               if (found_gold) {
-                  gx++;
-               }
-               for (Point p : axes) {
-                  p.x++;
-               }
-               for (Point p : keys) {
-                  p.x++;
-               }
-               if (path.size() > 0) {
-                  for (Node pnode : path) {
-                     pnode.nx++;
-                  }
-               }
-            }
-            for (int i = -2; i <= 2; i++) {        // update map with current view
-               map[r-2][c+i] = view[0][i+2];
-               if (map[r-2][c+i] == 'g') {
-                  found_gold = true;
-                  gx = r-2;
-                  gy = c+i;
-               }
-               if (map[r-2][c+i] == 'a') {
-                  Point p = new Point(r-2,c+i);
-                  if (!axes.contains(p)) {
-                     axes.add(p);
-                  }
-               }
-               if (map[r-2][c+i] == 'k') {
-                  Point p = new Point(r-2,c+i);
-                  if (!keys.contains(p)) {
-                     keys.add(p);
-                  }
-               }
-            }
-            visited[r][c] = true;
-            unvisited.remove(new Point(r,c));
-            map_updated = true;
-         } else {
-            map_updated = false;
-         }
-      } else if (dirn == WEST) {
-         c--;
-         if (!visited[r][c]) {
-            if (c-2 < 0) {                         // if we need to expand map to the left
-               for (int i = 0; i < row; i++) {     // add a column by shifting array to the right
-                  for (int j = col; j > 0; j--) {
-                     map[i][j] = map[i][j-1];
-                     visited[i][j] = visited[i][j-1];
-                  }
-               }
-               for (int i = 0; i < row; i++) {     // initialise first column
-                  map[i][0] = '?';
-                  visited[i][0] = false;
-                  unvisited.add(new Point(i,0));
-               }
-               col++;
-               c++;
-               y++;
-               if (found_gold) {
-                  gy++;
-               }
-               for (Point p : axes) {
-                  p.y++;
-               }
-               for (Point p : keys) {
-                  p.y++;
-               }
-               if (path.size() > 0) {
-                  for (Node pnode : path) {
-                     pnode.ny++;
-                  }
-               }
-            }
-            for (int i = -2; i <= 2; i++) {        // update map with current view
-               map[r+i][c-2] = view[0][2-i];
-               if (map[r+i][c-2] == 'g' && !found_gold) {
-                  found_gold = true;
-                  gx = r+i;
-                  gy = c-2;
-               }
-               if (map[r+i][c-2] == 'a') {
-                  Point p = new Point(r+i,c-2);
-                  if (!axes.contains(p)) {
-                     axes.add(p);
-                  }
-               }
-               if (map[r+i][c-2] == 'k') {
-                  Point p = new Point(r+i,c-2);
-                  if (!keys.contains(p)) {
-                     keys.add(p);
-                  }
-               }
-            }
-            visited[r][c] = true;
-            unvisited.remove(new Point(r,c));
-            map_updated = true;
-         } else {
-            map_updated = false;
-         }
-      } else if (dirn == SOUTH) {
-         r++;
-         if (!visited[r][c]) {
-            if (r+2 == row) {                      // if we need to expand map down
-               for (int j = 0; j < col; j++) {     // add another row
-                  map[row][j] = '?';
-                  visited[row][j] = false;
-                  unvisited.add(new Point(row,j));
-               }
-               row++;
-            }
-            for (int i = -2; i <= 2; i++) {        // update map with current view
-               map[r+2][c+i] = view[0][2-i];
-               if (map[r+2][c+i] == 'g' && !found_gold) {
-                  found_gold = true;
-                  gx = r+2;
-                  gy = c+i;
-               }
-               if (map[r+2][c+i] == 'a') {
-                  Point p = new Point(r+2,c+i);
-                  if (!axes.contains(p)) {
-                     axes.add(p);
-                  }
-               }
-               if (map[r+2][c+i] == 'k') {
-                  Point p = new Point(r+2,c+i);
-                  if (!keys.contains(p)) {
-                     keys.add(p);
-                  }
-               }
-            }
-            visited[r][c] = true;
-            unvisited.remove(new Point(r,c));
-            map_updated = true;
-         } else {
-            map_updated = false;
+      } else if (prev == 'C' || prev == 'U') {
+         if (dirn == EAST) {
+            map[r][c+1] = ' ';
+         } else if (dirn == NORTH) {
+            map[r-1][c] = ' ';
+         } else if (dirn == WEST) {
+            map[r][c-1] = ' ';
+         } else if (dirn == SOUTH) {
+            map[r+1][c] = ' ';
          }
       }
    }
