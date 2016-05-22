@@ -21,8 +21,8 @@ public class Agent {
    public int dirn;                          // direction of agent
    public int moves = 0;                     // number of moves
    public char prev;                         // previous move
-   public char[][] map = new char[100][100]; // constructed map of views from path travelled
-   public boolean[][] visited = new boolean[100][100]; // boolean value whether space has been visited
+   public char[][] map = new char[80][80]; // constructed map of views from path travelled
+   public boolean[][] visited = new boolean[80][80]; // boolean value whether space has been visited
    public List<Point> unvisited = new ArrayList<Point>();
    public int row = 5;                       // number of rows in the map
    public int col = 5;                       // number of columns in the map
@@ -37,6 +37,7 @@ public class Agent {
    public List<Node> path = new ArrayList<Node>();
    public List<Point> axes = new ArrayList<Point>();
    public List<Point> keys = new ArrayList<Point>();
+   public List<Point> doors = new ArrayList<Point>();
    public boolean has_axe = false;
    public boolean has_key = false;
    public boolean has_gold = false;
@@ -158,15 +159,27 @@ public class Agent {
       }
    }
 
-   private boolean isVisited(){
-      if(dirn == NORTH){
-         return visited[r][c-1];
-      } else if (dirn == EAST) {
-         return visited[r-1][c];
-      } else if (dirn == SOUTH){
-         return visited[r][c+1];
-      } else if (dirn == WEST){
-         return visited[r+1][c];
+   private boolean isVisited(char dir){
+      if (dir == 'L') {
+         if (dirn == NORTH) {
+            return visited[r][c - 1];
+         } else if (dirn == EAST) {
+            return visited[r - 1][c];
+         } else if (dirn == SOUTH) {
+            return visited[r][c + 1];
+         } else if (dirn == WEST) {
+            return visited[r + 1][c];
+         }
+      } else if (dir == 'F'){
+         if (dirn == NORTH) {
+            return visited[r-1][c];
+         } else if (dirn == EAST) {
+            return visited[r][c+1];
+         } else if (dirn == SOUTH) {
+            return visited[r+1][c];
+         } else if (dirn == WEST) {
+            return visited[r][c-1];
+         }
       }
       return false;
    }
@@ -206,14 +219,14 @@ public class Agent {
       // code isn't complete, there are cases that have not been covered yet.
 
       // if there is a wall in front
-      if (front == '~' || front == '*' || (!has_axe && front == 'T') || (!has_key && front == '-')){
+      if (front == '~' || front == '*' || (!has_axe && front == 'T') || (!has_key && front == '-')) {
          // and a wall to the left
-         if (left == '~' || left == '*' || (!has_axe && left == 'T') || (!has_key && left == '-')){
+         if (left == '~' || left == '*' || (!has_axe && left == 'T') || (!has_key && left == '-')) {
             ch = 'R';
             dirn = (dirn + 3) % 4;
 
             // or a wall to the right
-         } else if (right == '~' || right == '*' || (!has_axe && right == 'T') || (!has_key && right == '-')){
+         } else if (right == '~' || right == '*' || (!has_axe && right == 'T') || (!has_key && right == '-')) {
             ch = 'L';
             dirn = (dirn + 1) % 4;
             // or there are nothing on the sides but a wall in front
@@ -222,10 +235,17 @@ public class Agent {
             dirn = (dirn + 1) % 4;
          }
          // if the first left turn we come across is not visited then turn left
-      } else if (left == ' ' && !isVisited() && (view[3][1] == '*' || view[3][1] == '~' ||
-              (!has_axe && view[3][1] == 'T') || (!has_key && view[3][1] == '-'))){
+      } else if (front == ' ' && !isVisited('F')){
+         ch = 'F';
+
+      } else if (left == ' ' && !isVisited('L') && (view[3][1] == '*' || view[3][1] == '~' ||
+              (!has_axe && view[3][1] == 'T') || (!has_key && view[3][1] == '-'))) {
          ch = 'L';
          dirn = (dirn + 1) % 4;
+
+      } else if (right == ' ' && isVisited('F')){
+         ch = 'R';
+         dirn = (dirn + 3) % 4;
          // else you go forward until you find a wall
       } else if (front == ' ') {
          ch = 'F';
@@ -424,10 +444,16 @@ public class Agent {
                   gy = c+2;
                }
                if (map[r+i][c+2] == 'a') {
-                  axes.add(new Point(r+i,c+2));
+                  Point p = new Point(r+i,c+2);
+                  if (!axes.contains(p)) {
+                     axes.add(p);
+                  }
                }
                if (map[r+i][c+2] == 'k') {
-                  keys.add(new Point(r+i,c+2));
+                  Point p = new Point(r+i,c+2);
+                  if (!keys.contains(p)) {
+                     keys.add(p);
+                  }
                }
             }
             visited[r][c] = true;
@@ -472,10 +498,16 @@ public class Agent {
                   gy = c+i;
                }
                if (map[r-2][c+i] == 'a') {
-                  axes.add(new Point(r-2,c+i));
+                  Point p = new Point(r-2,c+i);
+                  if (!axes.contains(p)) {
+                     axes.add(p);
+                  }
                }
                if (map[r-2][c+i] == 'k') {
-                  keys.add(new Point(r-2,c+i));
+                  Point p = new Point(r-2,c+i);
+                  if (!keys.contains(p)) {
+                     keys.add(p);
+                  }
                }
             }
             visited[r][c] = true;
@@ -520,10 +552,16 @@ public class Agent {
                   gy = c-2;
                }
                if (map[r+i][c-2] == 'a') {
-                  axes.add(new Point(r+i,c-2));
+                  Point p = new Point(r+i,c-2);
+                  if (!axes.contains(p)) {
+                     axes.add(p);
+                  }
                }
                if (map[r+i][c-2] == 'k') {
-                  keys.add(new Point(r+i,c-2));
+                  Point p = new Point(r+i,c-2);
+                  if (!keys.contains(p)) {
+                     keys.add(p);
+                  }
                }
             }
             visited[r][c] = true;
@@ -551,15 +589,20 @@ public class Agent {
                   gy = c+i;
                }
                if (map[r+2][c+i] == 'a') {
-                  axes.add(new Point(r+2,c+i));
+                  Point p = new Point(r+2,c+i);
+                  if (!axes.contains(p)) {
+                     axes.add(p);
+                  }
                }
                if (map[r+2][c+i] == 'k') {
-                  keys.add(new Point(r+2,c+i));
+                  Point p = new Point(r+2,c+i);
+                  if (!keys.contains(p)) {
+                     keys.add(p);
+                  }
                }
             }
             visited[r][c] = true;
-            Point p = new Point(r,c);
-            unvisited.remove(p);
+            unvisited.remove(new Point(r,c));
             map_updated = true;
          } else {
             map_updated = false;
