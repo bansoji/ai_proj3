@@ -102,7 +102,8 @@ public class Agent {
          }
          // add neighbouring tiles that can be legally moved to
          if (current.ny < col-1 && (map[current.nx][current.ny+1] == ' ' || map[current.nx][current.ny+1] == 'g' ||
-                 (has_axe && map[current.nx][current.ny+1] == 'T') || (has_key && map[current.nx][current.ny+1] == '-'))) {
+                 (has_axe && map[current.nx][current.ny+1] == 'T') || (has_key && map[current.nx][current.ny+1] == '-')
+                 || map[current.nx][current.ny+1] == 'a' || map[current.nx][current.ny+1] == 'k')) {
             Node n = new Node(current.nx, current.ny + 1, map[current.nx][current.ny + 1]);
             n.parent = current;
             n.g = current.g + COST;
@@ -114,7 +115,8 @@ public class Agent {
             }
          }
          if (current.nx > 0 && (map[current.nx-1][current.ny] == ' ' || map[current.nx-1][current.ny] == 'g' ||
-                 (has_axe && map[current.nx-1][current.ny] == 'T') || (has_key && map[current.nx-1][current.ny] == '-'))) {
+                 (has_axe && map[current.nx-1][current.ny] == 'T') || (has_key && map[current.nx-1][current.ny] == '-')
+                 || map[current.nx-1][current.ny] == 'a' || map[current.nx-1][current.ny] == 'k')) {
             Node n = new Node(current.nx - 1, current.ny, map[current.nx - 1][current.ny]);
             n.parent = current;
             n.g = current.g + COST;
@@ -126,7 +128,8 @@ public class Agent {
             }
          }
          if (current.ny > 0 && (map[current.nx][current.ny-1] == ' ' || map[current.nx][current.ny-1] == 'g' ||
-                 (has_axe && map[current.nx][current.ny-1] == 'T') || (has_key && map[current.nx][current.ny-1] == '-'))) {
+                 (has_axe && map[current.nx][current.ny-1] == 'T') || (has_key && map[current.nx][current.ny-1] == '-')
+                 || map[current.nx][current.ny-1] == 'a' || map[current.nx][current.ny-1] == 'k')) {
             Node n = new Node(current.nx, current.ny - 1, map[current.nx][current.ny - 1]);
             n.parent = current;
             n.g = current.g + COST;
@@ -138,7 +141,8 @@ public class Agent {
             }
          }
          if (current.nx < row-1 && (map[current.nx+1][current.ny] == ' ' || map[current.nx+1][current.ny] == 'g'  ||
-                 (has_axe && map[current.nx+1][current.ny] == 'T') || (has_key && map[current.nx+1][current.ny] == '-'))) {
+                 (has_axe && map[current.nx+1][current.ny] == 'T') || (has_key && map[current.nx+1][current.ny] == '-')
+                 || map[current.nx+1][current.ny] == 'a' || map[current.nx+1][current.ny] == 'k')) {
             Node n = new Node(current.nx + 1, current.ny, map[current.nx + 1][current.ny]);
             n.parent = current;
             n.g = current.g + COST;
@@ -256,7 +260,7 @@ public class Agent {
       } else if (has_key && right == '-'){
          ch = 'R';
          dirn = (dirn + 3) % 4;
-         
+
          // if there is a wall in front
       } else if (front == '~' || front == '*' || (!has_axe && front == 'T') || (!has_key && front == '-')) {
          // and a wall to the left
@@ -404,14 +408,21 @@ public class Agent {
          has_gold = true;
          found_path = false;
       }
-      for (Point p : axes) {
-         if (r == p.x && c == p.y) {
-            has_axe = true;
+      if(!has_axe) {
+         for (Point p : axes) {
+            if (r == p.x && c == p.y) {
+               has_axe = true;
+               found_path = false;
+            }
          }
       }
-      for (Point p : keys) {
-         if (r == p.x && c == p.y) {
-            has_key = true;
+
+      if(!has_key) {
+         for (Point p : keys) {
+            if (r == p.x && c == p.y) {
+               has_key = true;
+               found_path = false;
+            }
          }
       }
 
@@ -427,6 +438,7 @@ public class Agent {
 
       // agent doesn't have the gold but knows the location of it
       } else if (!has_gold && found_gold) {
+
          if(!found_path){ // if there isn't a path, try make one
             Node gold = new Node(gx,gy,map[gx][gy]);
             createPathTo(gold);
