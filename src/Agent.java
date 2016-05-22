@@ -5,9 +5,11 @@
  *  UNSW Session 1, 2016
  */
 
+import java.awt.*;
 import java.util.*;
 import java.io.*;
 import java.net.*;
+import java.util.List;
 
 public class Agent {
 
@@ -21,6 +23,7 @@ public class Agent {
    public char prev;                         // previous move
    public char[][] map = new char[100][100]; // constructed map of views from path travelled
    public boolean[][] visited = new boolean[100][100]; // boolean value whether space has been visited
+   public List<Point> unvisited = new ArrayList<Point>();
    public int row = 5;                       // number of rows in the map
    public int col = 5;                       // number of columns in the map
    public int r = 2;                         // current row of agent
@@ -145,6 +148,7 @@ public class Agent {
          for (Node node = goal; node != start; node = node.parent) {
             reverse.add(node);
          }
+         path.clear();
          for (int i = 0; i < reverse.size(); i++) {
             path.add(i, reverse.get(reverse.size() - i - 1));
          }
@@ -192,7 +196,7 @@ public class Agent {
 
    public char explore(char view[][]) {
 
-      char ch = 'L';
+      char ch;
       char front = view[1][2];
       char left = view[2][1];
       char right = view[2][3];
@@ -221,13 +225,21 @@ public class Agent {
          ch = 'L';
          dirn = (dirn + 1) % 4;
          // else you go forward until you find a wall
+      } else if (front == ' ') {
+         ch = 'F';
+      } else if (has_axe && front == 'T') {
+         ch = 'C';
+      } else if (has_key && front == '-') {
+         ch = 'U';
       } else {
-         if (front == ' ') {
-            ch = 'F';
-         } else if (has_axe && front == 'T') {
-            ch = 'C';
-         } else if (has_key && front == '-') {
-            ch = 'U';
+         Random ran = new Random();
+         int rn = ran.nextInt(2);
+         if (rn == 0) {
+            ch = 'L';
+            dirn = (dirn + 1) % 4;
+         } else {
+            ch = 'R';
+            dirn = (dirn + 3) % 4;
          }
       }
       return ch;
@@ -266,7 +278,6 @@ public class Agent {
       // agent has the gold
       if (has_gold) {
          if(!found_path){ // if there isn't a path, generate one
-            path.clear();
             Node start = new Node(x,y,map[x][y]);
             createPathTo(start);
          }
@@ -302,6 +313,7 @@ public class Agent {
             for (int j = 0; j < 5; j++) {
                map[i][j] = view[4-j][i];
                visited[i][j] = false;
+               unvisited.add(new Point(i,j));
                if (map[i][j] == 'g') {
                   found_gold = true;
                   gx = i;
@@ -314,6 +326,7 @@ public class Agent {
             for (int j = 0; j < 5; j++) {
                map[i][j] = view[i][j];
                visited[i][j] = false;
+               unvisited.add(new Point(i,j));
                if (map[i][j] == 'g') {
                   found_gold = true;
                   gx = i;
@@ -326,6 +339,7 @@ public class Agent {
             for (int j = 0; j < 5; j++) {
                map[i][j] = view[j][4-i];
                visited[i][j] = false;
+               unvisited.add(new Point(i,j));
                if (map[i][j] == 'g') {
                   found_gold = true;
                   gx = i;
@@ -338,6 +352,7 @@ public class Agent {
             for (int j = 0; j < 5; j++) {
                map[i][j] = view[4-i][4-j];
                visited[i][j] = false;
+               unvisited.add(new Point(i,j));
                if (map[i][j] == 'g') {
                   found_gold = true;
                   gx = i;
@@ -348,6 +363,8 @@ public class Agent {
       }
       map[2][2] = ' ';
       visited[2][2] = true;
+      Point p = new Point(2,2);
+      unvisited.remove(p);
 
    }
 
@@ -359,6 +376,7 @@ public class Agent {
                for (int i = 0; i < row; i++) {     // add another column
                   map[i][col] = '?';
                   visited[i][col]= false;
+                  unvisited.add(new Point(i,col));
                }
                col++;
             }
@@ -371,6 +389,8 @@ public class Agent {
                }
             }
             visited[r][c] = true;
+            Point p = new Point(r,c);
+            unvisited.remove(p);
             map_updated = true;
          } else {
             map_updated = false;
@@ -388,6 +408,7 @@ public class Agent {
                for (int j = 0; j < col; j++) {     // initialise first row
                   map[0][j] = '?';
                   visited[0][j] = false;
+                  unvisited.add(new Point(0,j));
                }
                row++;
                r++;
@@ -405,6 +426,8 @@ public class Agent {
                }
             }
             visited[r][c] = true;
+            Point p = new Point(r,c);
+            unvisited.remove(p);
             map_updated = true;
          } else {
             map_updated = false;
@@ -422,6 +445,7 @@ public class Agent {
                for (int i = 0; i < row; i++) {     // initialise first column
                   map[i][0] = '?';
                   visited[i][0] = false;
+                  unvisited.add(new Point(i,0));
                }
                col++;
                c++;
@@ -439,6 +463,8 @@ public class Agent {
                }
             }
             visited[r][c] = true;
+            Point p = new Point(r,c);
+            unvisited.remove(p);
             map_updated = true;
          } else {
             map_updated = false;
@@ -450,6 +476,7 @@ public class Agent {
                for (int j = 0; j < col; j++) {     // add another row
                   map[row][j] = '?';
                   visited[row][j] = false;
+                  unvisited.add(new Point(row,j));
                }
                row++;
             }
@@ -462,6 +489,8 @@ public class Agent {
                }
             }
             visited[r][c] = true;
+            Point p = new Point(r,c);
+            unvisited.remove(p);
             map_updated = true;
          } else {
             map_updated = false;
