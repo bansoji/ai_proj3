@@ -614,6 +614,11 @@ public class Agent {
                for (Point p : keys) {
                   p.x++;
                }
+               if (path.size() > 0) {
+                  for (Node pnode : path) {
+                     pnode.nx++;
+                  }
+               }
             }
             for (int i = -2; i <= 2; i++) {        // update map with current view
                map[r-2][c+i] = view[0][i+2];
@@ -667,6 +672,11 @@ public class Agent {
                }
                for (Point p : keys) {
                   p.y++;
+               }
+               if (path.size() > 0) {
+                  for (Node pnode : path) {
+                     pnode.ny++;
+                  }
                }
             }
             for (int i = -2; i <= 2; i++) {        // update map with current view
