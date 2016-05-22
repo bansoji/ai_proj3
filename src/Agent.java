@@ -240,9 +240,25 @@ public class Agent {
       char right = view[2][3];
 
       // code isn't complete, there are cases that have not been covered yet.
-
-      // if there is a wall in front
-      if (front == '~' || front == '*' || (!has_axe && front == 'T') || (!has_key && front == '-')) {
+      if (has_axe && front == 'T') {
+         ch = 'C';
+      } else if (has_axe && left == 'T') {
+         ch = 'L';
+         dirn = (dirn + 1) % 4;
+      } else if (has_axe && right == 'T'){
+         ch = 'R';
+         dirn = (dirn + 3) % 4;
+      } else if (has_key && front == '-') {
+         ch = 'U';
+      } else if (has_key && left == '-') {
+         ch = 'L';
+         dirn = (dirn + 1) % 4;
+      } else if (has_key && right == '-'){
+         ch = 'R';
+         dirn = (dirn + 3) % 4;
+         
+         // if there is a wall in front
+      } else if (front == '~' || front == '*' || (!has_axe && front == 'T') || (!has_key && front == '-')) {
          // and a wall to the left
          if (left == '~' || left == '*' || (!has_axe && left == 'T') || (!has_key && left == '-')) {
             ch = 'R';
@@ -294,10 +310,7 @@ public class Agent {
       } else if (front == ' ') {
          ch = 'F';
          turning = false;
-      } else if (has_axe && front == 'T') {
-         ch = 'C';
-      } else if (has_key && front == '-') {
-         ch = 'U';
+
       } else {
          Random ran = new Random();
          int rn = ran.nextInt(2);
