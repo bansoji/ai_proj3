@@ -1,8 +1,28 @@
 /*********************************************
- *  Agent.java 
- *  Sample Agent for Text-Based Adventure Game
+ *  Agent.java
  *  COMP3411 Artificial Intelligence
  *  UNSW Session 1, 2016
+ *
+ *
+ *  Description :
+ *
+ *  Our agent initially uses a common maze solving method of moving along the left boundary and spiralling towards the
+ *  center to discover unvisited spaces. Every time the view of the agent contains new spaces, a 2D array representing a
+ *  learned map is updated using a single orientation. The location of the gold and any tools are also stored upon
+ *  discovery in lists of points. If the location of the gold is known an A* search using a Manhattan distance heuristic
+ *  is performed to find a path. If a path cannot be found and the location of tools are known then an A* search finds a
+ *  path to a tool, otherwise the agent moves using the initial approach. If the agent has the gold an A* search is
+ *  performed to find a path back to the start.
+ *
+ *  Stepping stones is dealt with via the A* where each node in the path contains the amount of stones held and as the
+ *  A* searches over water for the shortest path to the gold, the stone count is decremented resulting in the shortest
+ *  path to the gold with the least amount of stones used to attain that shortest path.
+ *
+ *  Authors :
+ *
+ *  Banson Tong   z3460406
+ *  Aaron Oni     z3459482
+ *
  */
 
 import java.awt.*;
@@ -45,14 +65,17 @@ public class Agent {
    private boolean turning = false;
    final static int COST = 1;
 
+   /**
+    * Local Node class for A* search that contains the heuristic, x & y coords and the stones left
+    */
    class Node {
       private Node parent;
-      private int nx;
-      private int ny;
+      private int nx;             // x coord
+      private int ny;             // y coord
       private char nch;
       private double f;
       private double g;
-      private double h;
+      private double h;           // heuristic
       private int stones_left;
 
       public Node(int x, int y, char ch) {
@@ -73,7 +96,10 @@ public class Agent {
 
    }
 
-   // a star search using Manhattan distance as a heuristic
+   /**
+    * A* search using Manhattan distance heuristic
+    * @param to destination
+     */
    private void createPathTo(Node to){
       PriorityQueue<Node> queue = new PriorityQueue<Node>(new Comparator<Node>() {
          @Override
@@ -201,7 +227,13 @@ public class Agent {
       }
    }
 
+    /**
+     * Method that returns if the cell in the direction of the agent is visited
+     * @param dir direction relative to agent
+     * @return boolean of whether cell has been visited
+     */
    private boolean isVisited(char dir){
+      // if left of agent
       if (dir == 'L') {
          if (dirn == NORTH) {
             return visited[r][c - 1];
@@ -212,6 +244,7 @@ public class Agent {
          } else if (dirn == WEST) {
             return visited[r + 1][c];
          }
+         // if front of agent
       } else if (dir == 'F'){
          if (dirn == NORTH) {
             return visited[r-1][c];
@@ -222,6 +255,7 @@ public class Agent {
          } else if (dirn == WEST) {
             return visited[r][c-1];
          }
+         // if right of agent
       } else if (dir == 'R'){
          if (dirn == NORTH) {
             return visited[r][c+1];
@@ -236,7 +270,11 @@ public class Agent {
       return false;
    }
 
-   // determines action of agent to reach the next state in the path
+   /**
+    * Determines the next action of the agent to reach the next state/node in path
+    * @param next next given Node from path to reach
+    * @return the command or action to reach that path
+     */
    private char nextMove(Node next){
       int nextdirn = 0;
       char move;
@@ -271,6 +309,11 @@ public class Agent {
       return move;
    }
 
+   /**
+    * Traversal algorithm to cover boundaries and then moving towards centre areas
+    * @param view given 5x5 view of agent
+    * @return next command/action that should be taken
+     */
    public char simpleMove(char view[][]) {
 
       char ch;
@@ -278,18 +321,17 @@ public class Agent {
       char left = view[2][1];
       char right = view[2][3];
 
-      // code isn't complete, there are cases that have not been covered yet.
-      if (has_axe && front == 'T') {
+      if (has_axe && front == 'T') {               // if you have axe, chop the tree in front
          ch = 'C';
-      } else if (has_axe && left == 'T') {
+      } else if (has_axe && left == 'T') {         // else if it is to either side, turn towards it
          ch = 'L';
          dirn = (dirn + 1) % 4;
       } else if (has_axe && right == 'T'){
          ch = 'R';
          dirn = (dirn + 3) % 4;
-      } else if (has_key && front == '-') {
+      } else if (has_key && front == '-') {        // if you have key, open the door in front
          ch = 'U';
-      } else if (has_key && left == '-') {
+      } else if (has_key && left == '-') {         // else turn towards the door
          ch = 'L';
          dirn = (dirn + 1) % 4;
       } else if (has_key && right == '-'){
@@ -330,22 +372,18 @@ public class Agent {
             turning = true;
 
          }
-         // if the first left turn we come across is not visited then turn left
+         // if the front is not visited, keep going forwards
       } else if ((front == ' ' || front == 'a' || front == 'k') && !isVisited('F')){
          ch = 'F';
          turning = false;
-
+         // turn left if the left is open and not visited or if both the front and the left is visited
       } else if ((left == ' ' || left == 'a' || left == 'k') && (!isVisited('L') || (isVisited('F') && isVisited('L'))) && (view[3][1] == '*' || view[3][1] == '~' ||
               (!has_axe && view[3][1] == 'T') || (!has_key && view[3][1] == '-')) && !turning) {
          ch = 'L';
          dirn = (dirn + 1) % 4;
          turning = true;
 
-//      } else if ((right == ' ' || right == 'a' || right == 'k') && isVisited('F')){
-//         ch = 'R';
-//         dirn = (dirn + 3) % 4;
-//
-         // else you go forward until you find a wall
+         // go forward until you find a wall
       } else if (front == ' ') {
          ch = 'F';
          turning = false;
@@ -364,18 +402,22 @@ public class Agent {
       return ch;
    }
 
-   // agent looks for tools or traverses to unvisited areas of the map
+   /**
+    * Agent looks for tools and traverses to them via A* or to unvisited areas of map using simpleMove()
+    * @param view given 5x5 view of agent
+    * @return next action
+     */
    public char explore(char view[][]) {
       char ch;
-      if (!has_axe && axes.size() > 0) { // if axe location is known try to find a path
+      // if axe location is found, try and find a path
+      if (!has_axe && axes.size() > 0) {
          for (Point p : axes) {
             Node axe = new Node(p.x, p.y, map[p.x][p.y]);
             createPathTo(axe);
             if (found_path) {
-               break;
+               break;   // if a path is found, break from loop
             }
          }
-
       }
       // if key location is known try to find a path
       if (!has_key && keys.size() > 0 && !found_path) {
@@ -386,7 +428,6 @@ public class Agent {
                break;
             }
          }
-
       }
       // if stones location is known
       if (!stones.isEmpty() && !found_path){
@@ -398,16 +439,21 @@ public class Agent {
             }
          }
       }
-
-      if (found_path) { // if the agent has found an axe follow the path
+      // if a path is found to either of the above
+      if (found_path) {
          Node next = path.get(0);
-         ch = nextMove(next);
+         ch = nextMove(next);         // decide next action using path generated from A*
       } else {
-         ch = simpleMove(view);
+         ch = simpleMove(view);       // traverse
       }
       return ch;
    }
 
+    /**
+     * Returns the final action determined from the algorithm and A*
+     * @param view the 5x5 view of agent
+     * @return the final action that will be carried out
+     */
    public char get_action( char view[][] ) {
 
       if (moves == 0) {
@@ -429,11 +475,13 @@ public class Agent {
       }
       update_map(view);
 
-      // if agent is now on gold, axe, or key update variables
+      // if agent is now on gold
       if (r == gx && c == gy) {
          has_gold = true;
          found_path = false;
       }
+
+      // if agent is on axe when the agent does not own one, pick it up
       if(!has_axe) {
          for (Point p : axes) {
             if (r == p.x && c == p.y) {
@@ -442,6 +490,8 @@ public class Agent {
             }
          }
       }
+
+      // if the agent is on the key when they do not own one, pick it up
       if(!has_key) {
          for (Point p : keys) {
             if (r == p.x && c == p.y) {
@@ -450,6 +500,8 @@ public class Agent {
             }
          }
       }
+
+      // if the agent is on a stone, pick it up
       if(!stones.isEmpty()) {
          Point toDelete = null;
          for (Point p : stones) {
@@ -464,6 +516,7 @@ public class Agent {
          }
       }
 
+      // decrease stone count when traversing over water
       if(prev == 'F' && map[r][c] == '~') has_stones--;
       char ch;
 
@@ -504,8 +557,13 @@ public class Agent {
       return ch;
    }
 
-   // constructed map of views from the agent
+   /**
+    * Construct a "memory" or map of the seen areas from view
+    * @param view given 5x5 view of agent
+     */
    void create_map(char view[][]) {
+
+      // if agent is facing east, update map relatively
       if (dirn == EAST) {
          for (int i = 0; i < 5; i++) {
             for (int j = 0; j < 5; j++) {
@@ -528,7 +586,7 @@ public class Agent {
                }
             }
          }
-      } else if (dirn == NORTH) {
+      } else if (dirn == NORTH) {   // if agent is facing north
          for (int i = 0; i < 5; i++) {
             for (int j = 0; j < 5; j++) {
                map[i][j] = view[i][j];
@@ -550,7 +608,7 @@ public class Agent {
                }
             }
          }
-      } else if (dirn == WEST) {
+      } else if (dirn == WEST) { // if agent is facing west
          for (int i = 0; i < 5; i++) {
             for (int j = 0; j < 5; j++) {
                map[i][j] = view[j][4-i];
@@ -572,7 +630,7 @@ public class Agent {
                }
             }
          }
-      } else if (dirn == SOUTH) {
+      } else if (dirn == SOUTH) {   // if agent is facing south
          for (int i = 0; i < 5; i++) {
             for (int j = 0; j < 5; j++) {
                map[i][j] = view[4-i][4-j];
@@ -601,6 +659,10 @@ public class Agent {
 
    }
 
+   /**
+    * Updates the memory map generated from create_map()
+    * @param view given 5x5 view around agent
+     */
    void update_map(char view[][]) {
       map[r][c] = ' ';
 
@@ -829,6 +891,9 @@ public class Agent {
       }
    }
 
+   /**
+    * Method to print the memory map for debugging purposes
+    */
    void print_map() {
       int i,j;
       System.out.println();
