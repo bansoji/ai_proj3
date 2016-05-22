@@ -444,10 +444,16 @@ public class Agent {
                   gy = c+2;
                }
                if (map[r+i][c+2] == 'a') {
-                  axes.add(new Point(r+i,c+2));
+                  Point p = new Point(r+i,c+2);
+                  if (!axes.contains(p)) {
+                     axes.add(p);
+                  }
                }
                if (map[r+i][c+2] == 'k') {
-                  keys.add(new Point(r+i,c+2));
+                  Point p = new Point(r+i,c+2);
+                  if (!keys.contains(p)) {
+                     keys.add(p);
+                  }
                }
             }
             visited[r][c] = true;
@@ -492,10 +498,16 @@ public class Agent {
                   gy = c+i;
                }
                if (map[r-2][c+i] == 'a') {
-                  axes.add(new Point(r-2,c+i));
+                  Point p = new Point(r-2,c+i);
+                  if (!axes.contains(p)) {
+                     axes.add(p);
+                  }
                }
                if (map[r-2][c+i] == 'k') {
-                  keys.add(new Point(r-2,c+i));
+                  Point p = new Point(r-2,c+i);
+                  if (!keys.contains(p)) {
+                     keys.add(p);
+                  }
                }
             }
             visited[r][c] = true;
@@ -540,10 +552,16 @@ public class Agent {
                   gy = c-2;
                }
                if (map[r+i][c-2] == 'a') {
-                  axes.add(new Point(r+i,c-2));
+                  Point p = new Point(r+i,c-2);
+                  if (!axes.contains(p)) {
+                     axes.add(p);
+                  }
                }
                if (map[r+i][c-2] == 'k') {
-                  keys.add(new Point(r+i,c-2));
+                  Point p = new Point(r+i,c-2);
+                  if (!keys.contains(p)) {
+                     keys.add(p);
+                  }
                }
             }
             visited[r][c] = true;
@@ -571,15 +589,20 @@ public class Agent {
                   gy = c+i;
                }
                if (map[r+2][c+i] == 'a') {
-                  axes.add(new Point(r+2,c+i));
+                  Point p = new Point(r+2,c+i);
+                  if (!axes.contains(p)) {
+                     axes.add(p);
+                  }
                }
                if (map[r+2][c+i] == 'k') {
-                  keys.add(new Point(r+2,c+i));
+                  Point p = new Point(r+2,c+i);
+                  if (!keys.contains(p)) {
+                     keys.add(p);
+                  }
                }
             }
             visited[r][c] = true;
-            Point p = new Point(r,c);
-            unvisited.remove(p);
+            unvisited.remove(new Point(r,c));
             map_updated = true;
          } else {
             map_updated = false;
