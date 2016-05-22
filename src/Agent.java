@@ -105,8 +105,8 @@ public class Agent {
          // add neighbouring tiles that can be legally moved to
          if (current.ny < col-1 && (map[current.nx][current.ny+1] == ' ' || map[current.nx][current.ny+1] == 'g' ||
                  (has_axe && map[current.nx][current.ny+1] == 'T') || (has_key && map[current.nx][current.ny+1] == '-')
-                 || map[current.nx][current.ny+1] == 'a' || map[current.nx][current.ny+1] == 'k')
-                 || map[current.nx][current.ny+1] == 'o') {
+                 || map[current.nx][current.ny+1] == 'a' || map[current.nx][current.ny+1] == 'k'
+                 || map[current.nx][current.ny+1] == 'o')) {
             Node n = new Node(current.nx, current.ny + 1, map[current.nx][current.ny + 1]);
             n.parent = current;
             n.g = current.g + COST;
