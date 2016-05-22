@@ -184,6 +184,16 @@ public class Agent {
          } else if (dirn == WEST) {
             return visited[r][c-1];
          }
+      } else if (dir == 'R'){
+         if (dirn == NORTH) {
+            return visited[r][c+1];
+         } else if (dirn == EAST) {
+            return visited[r+1][c];
+         } else if (dirn == SOUTH) {
+            return visited[r][c-1];
+         } else if (dirn == WEST) {
+            return visited[r-1][c];
+         }
       }
       return false;
    }
@@ -246,9 +256,24 @@ public class Agent {
             turning = true;
             // or there are nothing on the sides but a wall in front
          } else {
-            ch = 'L';
-            dirn = (dirn + 1) % 4;
+            if(isVisited('L') && isVisited('R')){
+               Random ran = new Random();
+               if (ran.nextInt(2) == 0){
+                  ch = 'R';
+                  dirn = (dirn + 3) % 4;
+               } else {
+                  ch = 'L';
+                  dirn = (dirn + 1) % 4;
+               }
+            } else if(isVisited('L')){
+               ch = 'R';
+               dirn = (dirn + 3) % 4;
+            } else {
+               ch = 'L';
+               dirn = (dirn + 1) % 4;
+            }
             turning = true;
+
          }
          // if the first left turn we come across is not visited then turn left
       } else if ((front == ' ' || front == 'a' || front == 'k') && !isVisited('F')){
