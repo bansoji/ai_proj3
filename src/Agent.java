@@ -36,7 +36,6 @@ public class Agent {
    public boolean has_key = false;
    public boolean has_gold = false;
    public boolean map_updated = false;
-   public Node currentNode;
    private final int COST = 1;
 
    class Node {
@@ -191,6 +190,49 @@ public class Agent {
       return move;
    }
 
+   public char explore(char view[][]) {
+
+      char ch = 'L';
+      char front = view[1][2];
+      char left = view[2][1];
+      char right = view[2][3];
+
+      // code isn't complete, there are cases that have not been covered yet.
+
+      // if there is a wall in front
+      if (front == '~' || front == '*' || (!has_axe && front == 'T') || (!has_key && front == '-')){
+         // and a wall to the left
+         if (left == '~' || left == '*' || (!has_axe && left == 'T') || (!has_key && left == '-')){
+            ch = 'R';
+            dirn = (dirn + 3) % 4;
+
+            // or a wall to the right
+         } else if (right == '~' || right == '*' || (!has_axe && right == 'T') || (!has_key && right == '-')){
+            ch = 'L';
+            dirn = (dirn + 1) % 4;
+            // or there are nothing on the sides but a wall in front
+         } else {
+            ch = 'L';
+            dirn = (dirn + 1) % 4;
+         }
+         // if the first left turn we come across is not visited then turn left
+      } else if (left == ' ' && !isVisited() && (view[3][1] == '*' || view[3][1] == '~' ||
+              (!has_axe && view[3][1] == 'T') || (!has_key && view[3][1] == '-'))){
+         ch = 'L';
+         dirn = (dirn + 1) % 4;
+         // else you go forward until you find a wall
+      } else {
+         if (front == ' ') {
+            ch = 'F';
+         } else if (has_axe && front == 'T') {
+            ch = 'C';
+         } else if (has_key && front == '-') {
+            ch = 'U';
+         }
+      }
+      return ch;
+   }
+
    public char get_action( char view[][] ) {
 
       if (moves == 0) {
@@ -220,10 +262,7 @@ public class Agent {
          found_path = false;
       }
 
-
       char ch = 'L';
-      int rn;
-      Random ran = new Random();
       // agent has the gold
       if (has_gold) {
          if(!found_path){ // if there isn't a path, generate one
@@ -234,7 +273,7 @@ public class Agent {
          Node next = path.get(0);
          ch = nextMove(next);
 
-      // agent knows the location of the gold and the path to it
+      // agent doesn't have the gold but knows the location of it
       } else if (!has_gold && found_gold) {
          if(!found_path){ // if there isn't a path, try make one
             Node gold = new Node(gx,gy,map[gx][gy]);
@@ -244,120 +283,17 @@ public class Agent {
             Node next = path.get(0);
             ch = nextMove(next);
          } else { // if you cannot reach gold at the moment
-            //TODO: traverse until path can be found
+            ch = explore(view);
          }
-         // agent is trying to find location of the gold
+
+      // agent is trying to find location of the gold
       } else {
-         char front = view[1][2];
-         char left = view[2][1];
-         char right = view[2][3];
-
-         // code isnt complete, there are cases that have not been covered yet.
-
-         // if there is a wall in front
-         if(front == '~' || front == '*' || front == 'T'){
-
-            // and a wall to the left
-            if(left == '~' || left == '*' || left == 'T'){
-               ch = 'R';
-               dirn = (dirn + 3) % 4;
-
-               // or a wall to the right
-            } else if(right == '~' || right == '*' || right == 'T'){
-               ch = 'L';
-               dirn = (dirn + 1) % 4;
-               // or there are nothing on the sides but a wall in front
-            } else {
-               ch = 'L';
-               dirn = (dirn + 1) % 4;
-            }
-            // if the first left turn u come across is not visited then turn left
-         } else if (left == ' ' && !isVisited() && (view[3][1] == '*' || view[3][1] == '~' || view[3][1] == 'T')){
-            ch = 'L';
-            dirn = (dirn + 1) % 4;
-            // else you go forward until you find a wall
-         } else if(front == ' '){
-            ch = 'F';
-         }
-
-//         if (view[1][2] == '~' || view[1][2] == '*' || view[1][2] == 'T' || view[1][2] == '-') {
-//            if (view[2][1] == '~' || view[2][1] == '*' || view[2][1] == 'T' || view[2][1] == '-') {
-//               ch = 'R';
-//               dirn = (dirn + 3) % 4;
-//            } else if (view[2][3] == '~' || view[2][3] == '*' || view[2][3] == 'T' || view[2][3] == '-') {
-//               ch = 'L';
-//               dirn = (dirn + 1) % 4;
-//            } else {
-//               rn = ran.nextInt(2);
-//               if (rn == 0) {
-//                  ch = 'L';
-//                  dirn = (dirn + 1) % 4;
-//               } else {
-//                  ch = 'R';
-//                  dirn = (dirn + 3) % 4;
-//               }
-//            }
-//         } else {
-//            if (view[2][1] == '~' || view[2][1] == '*' || view[2][1] == 'T' || view[2][1] == '-') {
-//               rn = ran.nextInt(2);
-//               if (rn == 0) {
-//                  ch = 'F';
-//               } else {
-//                  ch = 'R';
-//                  dirn = (dirn + 3) % 4;
-//               }
-//            } else if (view[2][3] == '~' || view[2][3] == '*' || view[2][3] == 'T' || view[2][3] == '-') {
-//               rn = ran.nextInt(2);
-//               if (rn == 0) {
-//                  ch = 'F';
-//               } else {
-//                  ch = 'L';
-//                  dirn = (dirn + 1) % 4;
-//               }
-//            } else {
-//               rn = ran.nextInt(4);
-//               if (rn == 0) {
-//                  ch = 'L';
-//                  dirn = (dirn + 1) % 4;
-//               } else if (rn == 1) {
-//                  ch = 'R';
-//                  dirn = (dirn + 3) % 4;
-//               } else {
-//                  ch = 'F';
-//               }
-//            }
-//         }
+         ch = explore(view);
       }
       moves++;
       print_map();
       prev = ch;
       return ch;
-
-      // REPLACE THIS CODE WITH AI TO CHOOSE ACTION!
-
-/*      int ch=0;
-
-      print_view(view);
-
-      System.out.print("Enter Action(s): ");
-
-      try {
-         while ( ch != -1 ) {
-            // read character from keyboard
-            ch  = System.in.read();
-
-            switch( ch ) { // if character is a valid action, return it
-               case 'F': case 'L': case 'R': case 'C': case 'U':
-               case 'f': case 'l': case 'r': case 'c': case 'u':
-                  return((char) ch );
-            }
-         }
-      }
-      catch (IOException e) {
-         System.out.println ("IO error:" + e );
-      }
-
-      return 0;*/
    }
 
    void create_map(char view[][]) {
