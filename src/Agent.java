@@ -37,8 +37,10 @@ public class Agent {
    public List<Node> path = new ArrayList<Node>();
    public List<Point> axes = new ArrayList<Point>();
    public List<Point> keys = new ArrayList<Point>();
+   public List<Point> stones = new ArrayList<Point>();
    public boolean has_axe = false;
    public boolean has_key = false;
+   public int has_stones = 0;
    public boolean has_gold = false;
    public boolean map_updated = false;
    private final int COST = 1;
@@ -424,6 +426,13 @@ public class Agent {
          }
       }
 
+      for (Point p : stones) {
+         if (r == p.x && c == p.y) {
+            has_stones++;
+            found_path = false;
+         }
+      }
+
       char ch;
       // agent has the gold
       if (has_gold) {
@@ -481,6 +490,9 @@ public class Agent {
                if (map[i][j] == 'k') {
                   keys.add(new Point(i,j));
                }
+               if (map[i][j] == 'o') {
+                  stones.add(new Point(i,j));
+               }
             }
          }
       } else if (dirn == NORTH) {
@@ -499,6 +511,9 @@ public class Agent {
                }
                if (map[i][j] == 'k') {
                   keys.add(new Point(i,j));
+               }
+               if (map[i][j] == 'o') {
+                  stones.add(new Point(i,j));
                }
             }
          }
@@ -519,6 +534,9 @@ public class Agent {
                if (map[i][j] == 'k') {
                   keys.add(new Point(i,j));
                }
+               if (map[i][j] == 'o') {
+                  stones.add(new Point(i,j));
+               }
             }
          }
       } else if (dirn == SOUTH) {
@@ -538,6 +556,9 @@ public class Agent {
                if (map[i][j] == 'k') {
                   keys.add(new Point(i,j));
                }
+               if (map[i][j] == 'o') {
+                  stones.add(new Point(i,j));
+               }
             }
          }
       }
@@ -548,6 +569,7 @@ public class Agent {
    }
 
    void update_map(char view[][]) {
+      map[r][c] = ' ';
       if (prev == 'F') {
          if (dirn == EAST) {
             c++;
@@ -577,6 +599,12 @@ public class Agent {
                      Point p = new Point(r + i, c + 2);
                      if (!keys.contains(p)) {
                         keys.add(p);
+                     }
+                  }
+                  if (map[r + i][c + 2] == 'o') {
+                     Point p = new Point(r + i, c + 2);
+                     if (!stones.contains(p)) {
+                        stones.add(p);
                      }
                   }
                }
@@ -613,6 +641,9 @@ public class Agent {
                   for (Point p : keys) {
                      p.x++;
                   }
+                  for (Point p : stones) {
+                     p.x++;
+                  }
                   if (path.size() > 0) {
                      for (Node pnode : path) {
                         pnode.nx++;
@@ -636,6 +667,12 @@ public class Agent {
                      Point p = new Point(r - 2, c + i);
                      if (!keys.contains(p)) {
                         keys.add(p);
+                     }
+                  }
+                  if (map[r - 2][c + i] == 'o') {
+                     Point p = new Point(r - 2, c + i);
+                     if (!stones.contains(p)) {
+                        stones.add(p);
                      }
                   }
                }
@@ -672,6 +709,9 @@ public class Agent {
                   for (Point p : keys) {
                      p.y++;
                   }
+                  for (Point p : stones) {
+                     p.y++;
+                  }
                   if (path.size() > 0) {
                      for (Node pnode : path) {
                         pnode.ny++;
@@ -695,6 +735,12 @@ public class Agent {
                      Point p = new Point(r + i, c - 2);
                      if (!keys.contains(p)) {
                         keys.add(p);
+                     }
+                  }
+                  if (map[r + i][c - 2] == 'o') {
+                     Point p = new Point(r + i, c - 2);
+                     if (!stones.contains(p)) {
+                        stones.add(p);
                      }
                   }
                }
@@ -732,6 +778,12 @@ public class Agent {
                      Point p = new Point(r + 2, c + i);
                      if (!keys.contains(p)) {
                         keys.add(p);
+                     }
+                  }
+                  if (map[r + 2][c + i] == 'o') {
+                     Point p = new Point(r + 2, c + i);
+                     if (!stones.contains(p)) {
+                        stones.add(p);
                      }
                   }
                }
