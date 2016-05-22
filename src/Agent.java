@@ -53,11 +53,13 @@ public class Agent {
       private double f;
       private double g;
       private double h;
+      private int stones_left;
 
       public Node(int x, int y, char ch) {
          nx = x;
          ny = y;
          nch = ch;
+         stones_left = 0;
       }
 
       @Override
@@ -91,6 +93,7 @@ public class Agent {
       start.g = 0;
       start.getEstimate(to.nx,to.ny);
       start.f = start.g + start.h;
+      start.stones_left = has_stones;
       queue.add(start);
       boolean found_goal = false;
       Node goal = null;
@@ -106,11 +109,17 @@ public class Agent {
          if (current.ny < col-1 && (map[current.nx][current.ny+1] == ' ' || map[current.nx][current.ny+1] == 'g' ||
                  (has_axe && map[current.nx][current.ny+1] == 'T') || (has_key && map[current.nx][current.ny+1] == '-')
                  || map[current.nx][current.ny+1] == 'a' || map[current.nx][current.ny+1] == 'k'
-                 || map[current.nx][current.ny+1] == 'o')) {
+                 || map[current.nx][current.ny+1] == 'o' || map[current.nx][current.ny+1] == 'O'
+                 || (current.stones_left != 0 && map[current.nx][current.ny+1] == '~'))) {
             Node n = new Node(current.nx, current.ny + 1, map[current.nx][current.ny + 1]);
             n.parent = current;
             n.g = current.g + COST;
             n.getEstimate(to.nx,to.ny);
+            if(current.stones_left > 0 && map[current.nx][current.ny + 1] == '~') {
+               n.stones_left = current.stones_left - 1;
+            } else {
+               n.stones_left = current.stones_left;
+            }
             n.f = n.g + n.h;
             if(!expanded.contains(n)) {
                queue.add(n);
@@ -120,11 +129,17 @@ public class Agent {
          if (current.nx > 0 && (map[current.nx-1][current.ny] == ' ' || map[current.nx-1][current.ny] == 'g' ||
                  (has_axe && map[current.nx-1][current.ny] == 'T') || (has_key && map[current.nx-1][current.ny] == '-')
                  || map[current.nx-1][current.ny] == 'a' || map[current.nx-1][current.ny] == 'k'
-                 || map[current.nx-1][current.ny] == 'o')) {
+                 || map[current.nx-1][current.ny] == 'o' || map[current.nx-1][current.ny] == 'O'
+                 ||(current.stones_left != 0 && map[current.nx-1][current.ny] == '~'))) {
             Node n = new Node(current.nx - 1, current.ny, map[current.nx - 1][current.ny]);
             n.parent = current;
             n.g = current.g + COST;
             n.getEstimate(to.nx,to.ny);
+            if(current.stones_left > 0 && map[current.nx - 1][current.ny] == '~') {
+               n.stones_left = current.stones_left - 1;
+            } else {
+               n.stones_left = current.stones_left;
+            }
             n.f = n.g + n.h;
             if(!expanded.contains(n)) {
                queue.add(n);
@@ -134,11 +149,17 @@ public class Agent {
          if (current.ny > 0 && (map[current.nx][current.ny-1] == ' ' || map[current.nx][current.ny-1] == 'g' ||
                  (has_axe && map[current.nx][current.ny-1] == 'T') || (has_key && map[current.nx][current.ny-1] == '-')
                  || map[current.nx][current.ny-1] == 'a' || map[current.nx][current.ny-1] == 'k'
-                 || map[current.nx][current.ny-1] == 'o')) {
+                 || map[current.nx][current.ny-1] == 'o' || map[current.nx][current.ny-1] == 'O'
+                 || (current.stones_left != 0 && map[current.nx][current.ny-1] == '~'))) {
             Node n = new Node(current.nx, current.ny - 1, map[current.nx][current.ny - 1]);
             n.parent = current;
             n.g = current.g + COST;
             n.getEstimate(to.nx,to.ny);
+            if(current.stones_left > 0 && map[current.nx][current.ny - 1] == '~') {
+               n.stones_left = current.stones_left - 1;
+            } else {
+               n.stones_left = current.stones_left;
+            }
             n.f = n.g + n.h;
             if(!expanded.contains(n)) {
                queue.add(n);
@@ -148,11 +169,17 @@ public class Agent {
          if (current.nx < row-1 && (map[current.nx+1][current.ny] == ' ' || map[current.nx+1][current.ny] == 'g'  ||
                  (has_axe && map[current.nx+1][current.ny] == 'T') || (has_key && map[current.nx+1][current.ny] == '-')
                  || map[current.nx+1][current.ny] == 'a' || map[current.nx+1][current.ny] == 'k'
-                 || map[current.nx+1][current.ny] == 'o')) {
+                 || map[current.nx+1][current.ny] == 'o' || map[current.nx+1][current.ny] == 'O'
+                 || (current.stones_left != 0 && map[current.nx+1][current.ny] == '~'))) {
             Node n = new Node(current.nx + 1, current.ny, map[current.nx + 1][current.ny]);
             n.parent = current;
             n.g = current.g + COST;
             n.getEstimate(to.nx,to.ny);
+            if(current.stones_left > 0 && map[current.nx + 1][current.ny] == '~') {
+               n.stones_left = current.stones_left - 1;
+            } else {
+               n.stones_left = current.stones_left;
+            }
             n.f = n.g + n.h;
             if(!expanded.contains(n)) {
                queue.add(n);
@@ -342,34 +369,16 @@ public class Agent {
       char ch;
       if (!has_axe && axes.size() > 0) { // if axe location is known try to find a path
          for (Point p : axes) {
-            Node axe = new Node(p.x,p.y,map[p.x][p.y]);
+            Node axe = new Node(p.x, p.y, map[p.x][p.y]);
             createPathTo(axe);
             if (found_path) {
                break;
             }
          }
-         if(found_path) { // if the agent has found an axe follow the path
-            Node next = path.get(0);
-            ch = nextMove(next);
-         } else if (!has_key && keys.size() > 0) { // if the agent can't get an axe look for a key
-            for (Point p : keys) {
-               Node key = new Node(p.x, p.y, map[p.x][p.y]);
-               createPathTo(key);
-               if (found_path) {
-                  break;
-               }
-            }
-            if (found_path) {
-               Node next = path.get(0);
-               ch = nextMove(next);
-            } else {
-               ch = simpleMove(view);
-            }
-         } else {
-            ch = simpleMove(view);
-         }
+
+      }
       // if key location is known try to find a path
-      } else if (!has_key && keys.size() > 0) {
+      if (!has_key && keys.size() > 0 && !found_path) {
          for (Point p : keys) {
             Node key = new Node(p.x,p.y,map[p.x][p.y]);
             createPathTo(key);
@@ -377,12 +386,22 @@ public class Agent {
                break;
             }
          }
-         if(found_path) { // if the a path was successfully made
-            Node next = path.get(0);
-            ch = nextMove(next);
-         } else {
-            ch = simpleMove(view);
+
+      }
+      // if stones location is known
+      if (!stones.isEmpty() && !found_path){
+         for (Point p : stones){
+            Node stone = new Node(p.x,p.y,map[p.x][p.y]);
+            createPathTo(stone);
+            if (found_path) {
+               break;
+            }
          }
+      }
+
+      if (found_path) { // if the agent has found an axe follow the path
+         Node next = path.get(0);
+         ch = nextMove(next);
       } else {
          ch = simpleMove(view);
       }
@@ -431,13 +450,21 @@ public class Agent {
             }
          }
       }
-      for (Point p : stones) {
-         if (r == p.x && c == p.y) {
-            has_stones++;
-            found_path = false;
+      if(!stones.isEmpty()) {
+         Point toDelete = null;
+         for (Point p : stones) {
+            if (r == p.x && c == p.y) {
+               has_stones++;
+               toDelete = p;
+               found_path = false;
+            }
+         }
+         if(toDelete != null){
+            stones.remove(toDelete);
          }
       }
 
+      if(prev == 'F' && map[r][c] == '~') has_stones--;
       char ch;
 
       // if the agent has the gold it will move back to the starting position
@@ -576,6 +603,7 @@ public class Agent {
 
    void update_map(char view[][]) {
       map[r][c] = ' ';
+
       if (prev == 'F') {
          if (dirn == EAST) {
             c++;
