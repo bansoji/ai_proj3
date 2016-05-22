@@ -382,7 +382,11 @@ public class Agent {
          ch = 'L';
          dirn = (dirn + 1) % 4;
          turning = true;
-
+         // if the right hasn't been traversed, traverse it
+      } else if (front == ' ' && isVisited('F') && right == ' ' && !isVisited('R')){
+         ch = 'R';
+         dirn = (dirn + 3) % 4;
+         turning = true;
          // go forward until you find a wall
       } else if (front == ' ') {
          ch = 'F';
