@@ -284,7 +284,7 @@ public class Agent {
             turning = true;
             // or there are nothing on the sides but a wall in front
          } else {
-            if(isVisited('L') && isVisited('R')){
+            if((isVisited('L') && isVisited('R')) || (!isVisited('L') && !isVisited('R'))){
                Random ran = new Random();
                if (ran.nextInt(2) == 0){
                   ch = 'R';
