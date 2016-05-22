@@ -105,7 +105,8 @@ public class Agent {
          // add neighbouring tiles that can be legally moved to
          if (current.ny < col-1 && (map[current.nx][current.ny+1] == ' ' || map[current.nx][current.ny+1] == 'g' ||
                  (has_axe && map[current.nx][current.ny+1] == 'T') || (has_key && map[current.nx][current.ny+1] == '-')
-                 || map[current.nx][current.ny+1] == 'a' || map[current.nx][current.ny+1] == 'k')) {
+                 || map[current.nx][current.ny+1] == 'a' || map[current.nx][current.ny+1] == 'k')
+                 || map[current.nx][current.ny+1] == 'o') {
             Node n = new Node(current.nx, current.ny + 1, map[current.nx][current.ny + 1]);
             n.parent = current;
             n.g = current.g + COST;
@@ -118,7 +119,8 @@ public class Agent {
          }
          if (current.nx > 0 && (map[current.nx-1][current.ny] == ' ' || map[current.nx-1][current.ny] == 'g' ||
                  (has_axe && map[current.nx-1][current.ny] == 'T') || (has_key && map[current.nx-1][current.ny] == '-')
-                 || map[current.nx-1][current.ny] == 'a' || map[current.nx-1][current.ny] == 'k')) {
+                 || map[current.nx-1][current.ny] == 'a' || map[current.nx-1][current.ny] == 'k'
+                 || map[current.nx-1][current.ny] == 'o')) {
             Node n = new Node(current.nx - 1, current.ny, map[current.nx - 1][current.ny]);
             n.parent = current;
             n.g = current.g + COST;
@@ -131,7 +133,8 @@ public class Agent {
          }
          if (current.ny > 0 && (map[current.nx][current.ny-1] == ' ' || map[current.nx][current.ny-1] == 'g' ||
                  (has_axe && map[current.nx][current.ny-1] == 'T') || (has_key && map[current.nx][current.ny-1] == '-')
-                 || map[current.nx][current.ny-1] == 'a' || map[current.nx][current.ny-1] == 'k')) {
+                 || map[current.nx][current.ny-1] == 'a' || map[current.nx][current.ny-1] == 'k'
+                 || map[current.nx][current.ny-1] == 'o')) {
             Node n = new Node(current.nx, current.ny - 1, map[current.nx][current.ny - 1]);
             n.parent = current;
             n.g = current.g + COST;
@@ -144,7 +147,8 @@ public class Agent {
          }
          if (current.nx < row-1 && (map[current.nx+1][current.ny] == ' ' || map[current.nx+1][current.ny] == 'g'  ||
                  (has_axe && map[current.nx+1][current.ny] == 'T') || (has_key && map[current.nx+1][current.ny] == '-')
-                 || map[current.nx+1][current.ny] == 'a' || map[current.nx+1][current.ny] == 'k')) {
+                 || map[current.nx+1][current.ny] == 'a' || map[current.nx+1][current.ny] == 'k'
+                 || map[current.nx+1][current.ny] == 'o')) {
             Node n = new Node(current.nx + 1, current.ny, map[current.nx + 1][current.ny]);
             n.parent = current;
             n.g = current.g + COST;
