@@ -21,8 +21,8 @@ public class Agent {
    public int dirn;                          // direction of agent
    public int moves = 0;                     // number of moves
    public char prev;                         // previous move
-   public char[][] map = new char[100][100]; // constructed map of views from path travelled
-   public boolean[][] visited = new boolean[100][100]; // boolean value whether space has been visited
+   public char[][] map = new char[80][80]; // constructed map of views from path travelled
+   public boolean[][] visited = new boolean[80][80]; // boolean value whether space has been visited
    public List<Point> unvisited = new ArrayList<Point>();
    public int row = 5;                       // number of rows in the map
    public int col = 5;                       // number of columns in the map
