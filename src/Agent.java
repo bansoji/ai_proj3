@@ -18,42 +18,41 @@ public class Agent {
    final static int WEST   = 2;
    final static int SOUTH  = 3;
 
-   public int dirn;                          // direction of agent
-   public int moves = 0;                     // number of moves
-   public char prev;                         // previous move
-   public char[][] map = new char[80][80]; // constructed map of views from path travelled
-   public boolean[][] visited = new boolean[80][80]; // boolean value whether space has been visited
-   public List<Point> unvisited = new ArrayList<Point>();
-   public int row = 5;                       // number of rows in the map
-   public int col = 5;                       // number of columns in the map
-   public int r = 2;                         // current row of agent
-   public int c = 2;                         // current column of agent
-   public int x = 2;                         // start x coordinate of agent
-   public int y = 2;                         // start y coordinate of agent
-   public boolean found_gold = false;        // true if location of gold has been discovered
-   public boolean found_path = false;      // true if path to gold has been found
-   public int gx;                            // x coordinate of gold
-   public int gy;                            // y coordinate of gold
-   public List<Node> path = new ArrayList<Node>();
-   public List<Point> axes = new ArrayList<Point>();
-   public List<Point> keys = new ArrayList<Point>();
-   public List<Point> stones = new ArrayList<Point>();
-   public boolean has_axe = false;
-   public boolean has_key = false;
-   public int has_stones = 0;
-   public boolean has_gold = false;
-   public boolean map_updated = false;
-   private final int COST = 1;
+   private int dirn;                                        // direction of agent
+   private int moves = 0;                                   // number of moves
+   private char prev;                                       // previous action
+   private char[][] map = new char[80][80];                 // constructed map of views from path travelled
+   private boolean[][] visited = new boolean[80][80];       // boolean value whether space has been visited
+   private List<Point> unvisited = new ArrayList<Point>();  // list of unvisited points
+   private int row = 5;                                     // number of rows in the map
+   private int col = 5;                                     // number of columns in the map
+   private int r = 2;                                       // current row of agent
+   private int c = 2;                                       // current column of agent
+   private int x = 2;                                       // start x coordinate of agent
+   private int y = 2;                                       // start y coordinate of agent
+   private boolean found_gold = false;                      // true if location of gold has been discovered
+   private boolean found_path = false;                      // true if path to goal has been found
+   private int gx;                                          // x coordinate of gold
+   private int gy;                                          // y coordinate of gold
+   private List<Node> path = new ArrayList<Node>();         // path created using A* search
+   private List<Point> axes = new ArrayList<Point>();       // list of axe locations
+   private List<Point> keys = new ArrayList<Point>();       // list of key locations
+   private List<Point> stones = new ArrayList<Point>();     // list of stepping stone locations
+   private boolean has_axe = false;                         // true if the agent has collected an axe
+   private boolean has_key = false;                         // true if the agent has collected a key
+   private int has_stones = 0;                              // number of stones the agent has collected
+   private boolean has_gold = false;                        // true if the agent has the gold
    private boolean turning = false;
+   final static int COST = 1;
 
    class Node {
-      public Node parent;
+      private Node parent;
       private int nx;
       private int ny;
-      public char nch;
-      public double f;
-      public double g;
-      public double h;
+      private char nch;
+      private double f;
+      private double g;
+      private double h;
 
       public Node(int x, int y, char ch) {
          nx = x;
@@ -72,6 +71,7 @@ public class Agent {
 
    }
 
+   // a star search using Manhattan distance as a heuristic
    private void createPathTo(Node to){
       PriorityQueue<Node> queue = new PriorityQueue<Node>(new Comparator<Node>() {
          @Override
@@ -96,13 +96,13 @@ public class Agent {
       Node goal = null;
       while (!queue.isEmpty() && !found_goal) {
          Node current = queue.poll();
-         // goal reached and goal obtained
+         // goal reached
          if (current.nx == to.nx && current.ny == to.ny) {
             found_path = true;
             found_goal = true;
             goal = current;
          }
-         // add neighbouring tiles that can be legally moved to
+         // add neighbouring tiles that can be moved to
          if (current.ny < col-1 && (map[current.nx][current.ny+1] == ' ' || map[current.nx][current.ny+1] == 'g' ||
                  (has_axe && map[current.nx][current.ny+1] == 'T') || (has_key && map[current.nx][current.ny+1] == '-')
                  || map[current.nx][current.ny+1] == 'a' || map[current.nx][current.ny+1] == 'k'
@@ -160,7 +160,8 @@ public class Agent {
             }
          }
       }
-      if (found_goal) { // if we have found a path store it
+      // store the path if found
+      if (found_goal) {
          List<Node> reverse = new ArrayList<Node>();
          for (Node node = goal; node != start; node = node.parent) {
             reverse.add(node);
@@ -208,6 +209,7 @@ public class Agent {
       return false;
    }
 
+   // determines action of agent to reach the next state in the path
    private char nextMove(Node next){
       int nextdirn = 0;
       char move;
@@ -335,9 +337,10 @@ public class Agent {
       return ch;
    }
 
+   // agent looks for tools or traverses to unvisited areas of the map
    public char explore(char view[][]) {
       char ch;
-      if (!has_axe && axes.size() > 0) { // if axe location is known try to find a path to an axe
+      if (!has_axe && axes.size() > 0) { // if axe location is known try to find a path
          for (Point p : axes) {
             Node axe = new Node(p.x,p.y,map[p.x][p.y]);
             createPathTo(axe);
@@ -356,7 +359,7 @@ public class Agent {
                   break;
                }
             }
-            if (found_path) { // if the a path was successfully made
+            if (found_path) {
                Node next = path.get(0);
                ch = nextMove(next);
             } else {
@@ -365,7 +368,7 @@ public class Agent {
          } else {
             ch = simpleMove(view);
          }
-         // look for a key
+      // if key location is known try to find a path
       } else if (!has_key && keys.size() > 0) {
          for (Point p : keys) {
             Node key = new Node(p.x,p.y,map[p.x][p.y]);
@@ -407,7 +410,7 @@ public class Agent {
       }
       update_map(view);
 
-      // if agent is now on gold, axe, or key update data
+      // if agent is now on gold, axe, or key update variables
       if (r == gx && c == gy) {
          has_gold = true;
          found_path = false;
@@ -420,7 +423,6 @@ public class Agent {
             }
          }
       }
-
       if(!has_key) {
          for (Point p : keys) {
             if (r == p.x && c == p.y) {
@@ -429,7 +431,6 @@ public class Agent {
             }
          }
       }
-
       for (Point p : stones) {
          if (r == p.x && c == p.y) {
             has_stones++;
@@ -438,44 +439,45 @@ public class Agent {
       }
 
       char ch;
-      // agent has the gold
+
+      // if the agent has the gold it will move back to the starting position
       if (has_gold) {
-         if(!found_path){ // if there isn't a path, generate one
+         if(!found_path){ // generate a path back to the start
             Node start = new Node(x,y,map[x][y]);
             createPathTo(start);
          }
          Node next = path.get(0);
          ch = nextMove(next);
 
-      // agent doesn't have the gold but knows the location of it
+      // agent does not have the gold but knows its location
       } else if (!has_gold && found_gold) {
-
-         if(!found_path){ // if there isn't a path, try make one
+         if(!found_path){ // try to find a path to the gold
             Node gold = new Node(gx,gy,map[gx][gy]);
             createPathTo(gold);
          }
-         if(found_path) { // if a path was successfully made
+         if(found_path) { // if the gold can be reached move along path
             Node next = path.get(0);
             ch = nextMove(next);
-         } else { // if gold cannot be reached try and find an axe or key
+         } else { // if gold cannot be reached try and find tools or unvisited areas
             ch = explore(view);
          }
 
       // agent is trying to find location of the gold
       } else {
-         if(found_path) { // if a path to an axe or key was found follow it
+         if(found_path) { // if a path to an axe or key was found move along it
             Node next = path.get(0);
             ch = nextMove(next);
-         } else { // try and find an axe or key or move to unvisited
+         } else { // try and find an axe or key or move to unvisited areas
             ch = explore(view);
          }
       }
       moves++;
-      print_map();
+      //print_map();
       prev = ch;
       return ch;
    }
 
+   // constructed map of views from the agent
    void create_map(char view[][]) {
       if (dirn == EAST) {
          for (int i = 0; i < 5; i++) {
@@ -578,15 +580,15 @@ public class Agent {
          if (dirn == EAST) {
             c++;
             if (!visited[r][c]) {
-               if (c + 2 == col) {                      // if we need to expand map to the right
-                  for (int i = 0; i < row; i++) {     // add another column
+               if (c + 2 == col) {                       // if we need to expand map to the right
+                  for (int i = 0; i < row; i++) {        // add another column
                      map[i][col] = '?';
                      visited[i][col] = false;
                      unvisited.add(new Point(i, col));
                   }
                   col++;
                }
-               for (int i = -2; i <= 2; i++) {        // update map with current view
+               for (int i = -2; i <= 2; i++) {           // update map with current view
                   map[r + i][c + 2] = view[0][i + 2];
                   if (map[r + i][c + 2] == 'g') {
                      found_gold = true;
@@ -614,21 +616,18 @@ public class Agent {
                }
                visited[r][c] = true;
                unvisited.remove(new Point(r, c));
-               map_updated = true;
-            } else {
-               map_updated = false;
             }
          } else if (dirn == NORTH) {
             r--;
             if (!visited[r][c]) {
-               if (r - 2 < 0) {                         // if we need to expand map up
-                  for (int i = row; i > 0; i--) {     // add a row by shifting array down a row
+               if (r - 2 < 0) {                          // if we need to expand map up
+                  for (int i = row; i > 0; i--) {        // add a row by shifting array down a row
                      for (int j = 0; j < col; j++) {
                         map[i][j] = map[i - 1][j];
                         visited[i][j] = visited[i - 1][j];
                      }
                   }
-                  for (int j = 0; j < col; j++) {     // initialise first row
+                  for (int j = 0; j < col; j++) {        // initialise first row
                      map[0][j] = '?';
                      visited[0][j] = false;
                      unvisited.add(new Point(0, j));
@@ -654,7 +653,7 @@ public class Agent {
                      }
                   }
                }
-               for (int i = -2; i <= 2; i++) {        // update map with current view
+               for (int i = -2; i <= 2; i++) {           // update map with current view
                   map[r - 2][c + i] = view[0][i + 2];
                   if (map[r - 2][c + i] == 'g') {
                      found_gold = true;
@@ -682,21 +681,18 @@ public class Agent {
                }
                visited[r][c] = true;
                unvisited.remove(new Point(r, c));
-               map_updated = true;
-            } else {
-               map_updated = false;
             }
          } else if (dirn == WEST) {
             c--;
             if (!visited[r][c]) {
-               if (c - 2 < 0) {                         // if we need to expand map to the left
-                  for (int i = 0; i < row; i++) {     // add a column by shifting array to the right
+               if (c - 2 < 0) {                          // if we need to expand map to the left
+                  for (int i = 0; i < row; i++) {        // add a column by shifting array to the right
                      for (int j = col; j > 0; j--) {
                         map[i][j] = map[i][j - 1];
                         visited[i][j] = visited[i][j - 1];
                      }
                   }
-                  for (int i = 0; i < row; i++) {     // initialise first column
+                  for (int i = 0; i < row; i++) {        // initialise first column
                      map[i][0] = '?';
                      visited[i][0] = false;
                      unvisited.add(new Point(i, 0));
@@ -722,7 +718,7 @@ public class Agent {
                      }
                   }
                }
-               for (int i = -2; i <= 2; i++) {        // update map with current view
+               for (int i = -2; i <= 2; i++) {           // update map with current view
                   map[r + i][c - 2] = view[0][2 - i];
                   if (map[r + i][c - 2] == 'g' && !found_gold) {
                      found_gold = true;
@@ -750,22 +746,19 @@ public class Agent {
                }
                visited[r][c] = true;
                unvisited.remove(new Point(r, c));
-               map_updated = true;
-            } else {
-               map_updated = false;
             }
          } else if (dirn == SOUTH) {
             r++;
             if (!visited[r][c]) {
-               if (r + 2 == row) {                      // if we need to expand map down
-                  for (int j = 0; j < col; j++) {     // add another row
+               if (r + 2 == row) {                       // if we need to expand map down
+                  for (int j = 0; j < col; j++) {        // add another row
                      map[row][j] = '?';
                      visited[row][j] = false;
                      unvisited.add(new Point(row, j));
                   }
                   row++;
                }
-               for (int i = -2; i <= 2; i++) {        // update map with current view
+               for (int i = -2; i <= 2; i++) {           // update map with current view
                   map[r + 2][c + i] = view[0][2 - i];
                   if (map[r + 2][c + i] == 'g' && !found_gold) {
                      found_gold = true;
@@ -793,9 +786,6 @@ public class Agent {
                }
                visited[r][c] = true;
                unvisited.remove(new Point(r, c));
-               map_updated = true;
-            } else {
-               map_updated = false;
             }
          }
       } else if (prev == 'C' || prev == 'U') {
@@ -903,7 +893,7 @@ public class Agent {
                   }
                }
             }
-            agent.print_view( view ); // COMMENT THIS OUT BEFORE SUBMISSION
+            //agent.print_view( view ); // COMMENT THIS OUT BEFORE SUBMISSION
             action = agent.get_action( view );
             out.write( action );
          }
