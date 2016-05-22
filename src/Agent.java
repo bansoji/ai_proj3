@@ -42,6 +42,7 @@ public class Agent {
    public boolean has_gold = false;
    public boolean map_updated = false;
    private final int COST = 1;
+   private boolean turning = false;
 
    class Node {
       public Node parent;
@@ -200,13 +201,16 @@ public class Agent {
          nextdirn = SOUTH;
       }
       if (dirn == nextdirn) {
-         path.remove(next);
+
          if (next.nch == 'T') {
             move = 'C';
+            next.nch = ' ';
          } else if (next.nch == '-') {
             move = 'U';
+            next.nch = ' ';
          } else {
             move = 'F';
+            path.remove(next);
          }
       } else if ((dirn + 1) % 4 == nextdirn) {
          dirn = (dirn + 1) % 4;
@@ -233,31 +237,38 @@ public class Agent {
          if (left == '~' || left == '*' || (!has_axe && left == 'T') || (!has_key && left == '-')) {
             ch = 'R';
             dirn = (dirn + 3) % 4;
+            turning = true;
 
             // or a wall to the right
          } else if (right == '~' || right == '*' || (!has_axe && right == 'T') || (!has_key && right == '-')) {
             ch = 'L';
             dirn = (dirn + 1) % 4;
+            turning = true;
             // or there are nothing on the sides but a wall in front
          } else {
             ch = 'L';
             dirn = (dirn + 1) % 4;
+            turning = true;
          }
          // if the first left turn we come across is not visited then turn left
       } else if ((front == ' ' || front == 'a' || front == 'k') && !isVisited('F')){
          ch = 'F';
+         turning = false;
 
-      } else if ((left == ' ' || left == 'a' || left == 'k') && !isVisited('L') && (view[3][1] == '*' || view[3][1] == '~' ||
-              (!has_axe && view[3][1] == 'T') || (!has_key && view[3][1] == '-'))) {
+      } else if ((left == ' ' || left == 'a' || left == 'k') && (!isVisited('L') || (isVisited('F') && isVisited('L'))) && (view[3][1] == '*' || view[3][1] == '~' ||
+              (!has_axe && view[3][1] == 'T') || (!has_key && view[3][1] == '-')) && !turning) {
          ch = 'L';
          dirn = (dirn + 1) % 4;
+         turning = true;
 
-      } else if ((right == ' ' || right == 'a' || right == 'k') && isVisited('F')){
-         ch = 'R';
-         dirn = (dirn + 3) % 4;
+//      } else if ((right == ' ' || right == 'a' || right == 'k') && isVisited('F')){
+//         ch = 'R';
+//         dirn = (dirn + 3) % 4;
+//
          // else you go forward until you find a wall
       } else if (front == ' ') {
          ch = 'F';
+         turning = false;
       } else if (has_axe && front == 'T') {
          ch = 'C';
       } else if (has_key && front == '-') {
@@ -346,7 +357,7 @@ public class Agent {
          }
          create_map(view);
       }
-      if (prev == 'F' || prev == 'C' || prev == 'U') {
+      if (prev == 'F') {
             update_map(view);
       }
 
